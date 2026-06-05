@@ -1,0 +1,162 @@
+openapi: 3.0.0
+info:
+  title: documentation for Drivers
+  version: 1.0.0
+  description: covers simple test for Driver documentation
+paths: 
+  /api/v1/driver/signUpDriver:
+    post:
+      summary: this endpoint is to create a Driver
+      tags: [Sign Up]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - firstName
+                - lastName
+                - phoneNumber
+                - townOrVillage
+                - password
+              properties:
+                firstName:
+                  type: string
+                  example: David 
+                lastName:
+                  type: string
+                  example: Daniels
+                email:
+                  type: string
+                  example: formatmail@gmail.com
+                phoneNumber:
+                  type: string
+                  example: 08021342132
+                townOrVillage:
+                  type: string
+                  example: ikorodu
+                password:
+                  type: string
+                  example: StringerWe123@
+      responses:
+        "201":
+          description: Driver successfully created
+
+  /api/v1/driver/verifyEmail:
+    post:
+      summary: this endpoint is to verify a driverss email
+      tags: [Verify Otp]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - email
+                - otp
+              properties:
+                email:
+                  type: string
+                  example: formatmail@gmail.com
+                otp:
+                  type: string
+                  example: 432123
+      responses:
+        "200":
+          description: drivers's email verified
+
+  /api/v1/driver/driversLogin:
+    post:
+      summary: this endpoint is to login A driver
+      tags: [login]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - emailOrPhone
+                - password
+              properties:
+                emailOrPhone:
+                  type: string
+                  example: formatmail1@gmail.com
+                password:
+                  type: string
+                  example: Forma@gmail
+      responses:
+        "200":
+          description: Driver successfully logged in
+
+  /api/v1/driver/forget-Password:
+    post:
+      summary: this endpoint is to change the users password
+      tags: [forget-password]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - emailOrPhone
+              properties:
+                emailOrPhone:
+                  type: string
+                  example: formatmail1@gmail.com
+      responses:
+        "200":
+          description: successfully forgotten password
+
+  /api/v1/driver/reset-Password:
+    post:
+      summary: this endpoint is to reset the Drivers password
+      tags: [reset-password]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: formatmail1@gmail.com
+                password:
+                  type: string
+                  example: Forma@gmail
+      responses:
+        "200":
+          description: successfully reset the Drivers password
+
+  /api/v1/driver/resendOtp:
+    post:
+      summary: this endpoint is to reset the Drivers password
+      tags: [resendOtp]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: formatmail1@gmail.com
+      responses:
+        "200":
+          description: successfully reset the Drivers password
+  
+
+  
+
+        

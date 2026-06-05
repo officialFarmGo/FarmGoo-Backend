@@ -1,0 +1,41 @@
+const mongoose = require('mongoose')
+
+const farmKycSchema = new mongoose.Schema({
+    farmer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'farmers',
+        required: true
+    },
+    specificLocationOrLandmark: {
+        type: String,
+        trim: true,
+        required: true
+    },
+    whatDoYouFarm:{
+        type: [String],
+        required: true
+    },
+    preferredMarketDestination: {
+        type: String,
+        trim: true,
+        required: true
+    },
+    farmSize:{
+        type: String,
+        enum: ['Small', 'Medium', 'Large', 'Very Large'],
+        required: true
+    },
+    state: {
+        type: String,
+        required: true
+    },
+    kycStatus: {
+    type: String,
+    enum: ['Pending', 'Approved', 'Rejected'],
+    default: 'Pending'
+    }
+},{ timestamps: true })
+
+const farmKycModel =  mongoose.model('farmKyc', farmKycSchema)
+
+module.exports = farmKycModel

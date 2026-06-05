@@ -1,0 +1,162 @@
+openapi: 3.0.0
+info:
+  title: documentation for Farmers
+  version: 1.0.0
+  description: covers simple test for farmer documentation
+paths: 
+  /api/v1/farm/signUp:
+    post:
+      summary: this endpoint is to create a farmer
+      tags: [Sign Up]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - firstName
+                - lastName
+                - phoneNumber
+                - townOrVillage
+                - password
+              properties:
+                firstName:
+                  type: string
+                  example: David 
+                lastName:
+                  type: string
+                  example: Daniels
+                email:
+                  type: string
+                  example: formatmail@gmail.com
+                phoneNumber:
+                  type: string
+                  example: 08021342132
+                townOrVillage:
+                  type: string
+                  example: ikorodu
+                password:
+                  type: string
+                  example: StringerWe123@
+      responses:
+        "201":
+          description: Farmer successfully created
+
+  /api/v1/farm/verify:
+    post:
+      summary: this endpoint is to verify a farmers email
+      tags: [Verify Otp]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - email
+                - otp
+              properties:
+                email:
+                  type: string
+                  example: formatmail@gmail.com
+                otp:
+                  type: string
+                  example: 432123
+      responses:
+        "200":
+          description: Farmer's email verified
+
+  /api/v1/farm/farmLog:
+    post:
+      summary: this endpoint is to login A farmer
+      tags: [login]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - emailOrPhone
+                - password
+              properties:
+                emailOrPhone:
+                  type: string
+                  example: formatmail1@gmail.com
+                password:
+                  type: string
+                  example: Forma@gmail
+      responses:
+        "200":
+          description: Farmer successfully logged in
+
+  /api/v1/farm/forget-Password:
+    post:
+      summary: this endpoint is to change the users password
+      tags: [forget-password]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - emailOrPhone
+              properties:
+                emailOrPhone:
+                  type: string
+                  example: formatmail1@gmail.com
+      responses:
+        "200":
+          description: successfully forgotten password
+
+  /api/v1/farm/reset-Password:
+    post:
+      summary: this endpoint is to reset the farmers password
+      tags: [reset-password]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: formatmail1@gmail.com
+                password:
+                  type: string
+                  example: Forma@gmail
+      responses:
+        "200":
+          description: successfully reset the farmers password
+
+  /api/v1/farm/resendOtp:
+    post:
+      summary: this endpoint is to reset the farmers password
+      tags: [resendOtp]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: formatmail1@gmail.com
+      responses:
+        "200":
+          description: successfully reset the farmers password
+  
+
+  
+
+        
