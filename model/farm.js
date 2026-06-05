@@ -46,6 +46,10 @@ const farmSchema = new mongoose.Schema({
     kycVerified: {
     type: Boolean,
     default: false
+    },
+    role: {
+        type: String, 
+        default: 'farmer'
     }
 
 },  {timestamps: true})

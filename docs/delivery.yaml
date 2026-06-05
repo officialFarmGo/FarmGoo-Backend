@@ -1,0 +1,30 @@
+openapi: 3.0.0
+info:
+  title: documentation for Drivers
+  version: 1.0.0
+  description: covers simple test for Driver documentation
+paths: 
+  /api/v1/delivery/testing:
+    post:
+      summary: this endpoint is to get the calculated distance for the delivery
+      tags: [Get Distance]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - origin
+                - destination
+              properties:
+                origin:
+                  type: string
+                  example: Ikorodu, Lagos 
+                destination:
+                  type: string
+                  example: Mile 12 Market, Lagos
+      responses:
+        "200":
+          description: delivery time and distance calculated
+

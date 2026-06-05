@@ -50,7 +50,12 @@ const driverSchema = new mongoose.Schema({
     isAvailable: {
         type: Boolean,
         default: true  
-}
+},
+role: {
+        type: String, 
+        default: 'driver'
+    }
+
 
 }, {timestamps: true})
 

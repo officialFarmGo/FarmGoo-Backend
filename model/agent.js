@@ -31,6 +31,10 @@ const agentSchema = new mongoose.Schema({
         type: String,
         required: true,
         minLength: 8
+    },
+    role: {
+        type: String, 
+        default: 'agent'
     }
 }, { timestamps: true } )
 

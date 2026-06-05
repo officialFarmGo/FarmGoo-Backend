@@ -24,6 +24,8 @@ const paymentRouter = require('./router/paymentRouter')
 
 const deliveryRoute = require('./router/deliveryRoute')
 
+const bankRouter = require('./router/bankRouter')
+
 
 const app = express()
 
@@ -49,6 +51,8 @@ app.use('/api/v1/driverKyc', driverKycRouter)
 app.use('/api/v1/payment', paymentRouter)
 
 app.use('/api/v1/delivery', deliveryRoute)
+
+app.use('/api/v1/bank', bankRouter)
 
 app.use((err, req, res, next)=>{
     const statusCode = err.statusCode || 500;
