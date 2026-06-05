@@ -30,7 +30,7 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
-app.use('/apisDocs', swaggerUi.serve, swaggerUi.setup(swagger))
+app.use('/api/v1/apiDocs', swaggerUi.serve, swaggerUi.setup(swagger))
 
 
 
