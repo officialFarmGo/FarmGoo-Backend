@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const PORT = 4167
 const swaggerUi = require('swagger-ui-express')
 const swagger = require('./documentation')
+const cors = require('cors')
 
 const router = require('./router/farmRoute')
 
@@ -27,6 +28,7 @@ const deliveryRoute = require('./router/deliveryRoute')
 const app = express()
 
 app.use(express.json())
+app.use(cors())
 
 app.use('/apisDocs', swaggerUi.serve, swaggerUi.setup(swagger))
 

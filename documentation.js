@@ -12,11 +12,17 @@ const options = {
             version: '1.0.0',
             description: "backend Api for FarmGoo"
         },
-        servers: [{
+        servers: [
+            {
+            url: 'https://farmgoo-backend-1.onrender.com',
+            description: 'production url'
+        },
+            {
             url: 'http://localhost:4167',
-            description: 'hosted url',
+            description: 'development url',
 
-        }],
+        }
+    ],
         components: {
         securitySchemes: {
             bearerAuth: {
