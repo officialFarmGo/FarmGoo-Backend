@@ -10,6 +10,7 @@ exports.addBank = async (req, res, next) => {
   try {
     const { bankName, AccountName, AccountNumber } = req.body;
     const { id } = req.user;
+    const userRole = req.user.role
 
     const [farmer, driver, agent] = await Promise.all([
       farmModel.findById(id),

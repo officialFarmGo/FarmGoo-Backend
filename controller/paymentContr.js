@@ -10,16 +10,29 @@ const { default: axios } = require('axios')
 
 exports.initializePayment = async(req, res, next) =>{
     try{
-        const farmerId = req.user.id
+        const {id} = req.user
+        const userRole  = req.user.role
         const {amount} = req.body
 
-        const farmer = await farmerModel.findById(farmerId)
-        if(!farmer){
+        let user 
+        if(userRole === 'farmer'){
+             user = await farmModel.findById(id)
+        }
+        else if(userRole === 'driver'){
+             user = await driverModel.findById(id)
+        }
+        else if(userRole === 'agent'){
+             user = await agentModel.findById(id)
+        }
+
+        if(!user){
             return next({
-                message: 'something went wrong',
-                status
+                message: 'user not found',
+                statusCode: 404
             })
         }
+
+        const ownerType = userRole === 'farmer'? 'farmers': userRole === 'driver'? 'drivers': 'agents'
 
         const ref = otpGenerator.generate(6, {upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false})
         const reference = `FRG-${ref}`
@@ -30,8 +43,8 @@ exports.initializePayment = async(req, res, next) =>{
         reference,
         currency: 'NGN',
         customer: {
-            email: farmer.email,
-            name: farmer.name
+            email: user.email,
+            name:`${user.firstName} ${user.lastName}`
         },
         redirect_url: 'https://google.com/'
        }
@@ -43,8 +56,8 @@ exports.initializePayment = async(req, res, next) =>{
        })
 
        const newPayment = new paymentModel({
-        owner: farmerId,
-        ownerType: 'farmers',
+        owner: id,
+        ownerType,
          reference,
         amount: payment.amount
        })

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: documentation for Drivers
   version: 1.0.0
-  description: covers simple test for Driver documentation
+  description: covers simple test for Driver authenitcation
 paths: 
   /api/v1/driver/signUpDriver:
     post:
@@ -45,7 +45,7 @@ paths:
 
   /api/v1/driver/verifyEmail:
     post:
-      summary: this endpoint is to verify a driverss email
+      summary: this endpoint is to verify a drivers email
       tags: [Verify Otp]
       requestBody:
         required: true
@@ -65,7 +65,7 @@ paths:
                   example: 432123
       responses:
         "200":
-          description: drivers's email verified
+          description: The driver emails have been verified
 
   /api/v1/driver/driversLogin:
     post:
@@ -93,7 +93,7 @@ paths:
 
   /api/v1/driver/forget-Password:
     post:
-      summary: this endpoint is to change the users password
+      summary: this endpoint is to change the drivers password
       tags: [forget-password]
       requestBody:
         required: true
@@ -137,7 +137,7 @@ paths:
 
   /api/v1/driver/resendOtp:
     post:
-      summary: this endpoint is to reset the Drivers password
+      summary: this endpoint is to resend the Drivers Otp
       tags: [resendOtp]
       requestBody:
         required: true
@@ -154,7 +154,7 @@ paths:
                   example: formatmail1@gmail.com
       responses:
         "200":
-          description: successfully reset the Drivers password
+          description: successfully reset the drivers otp
   
 
   

@@ -93,7 +93,7 @@ paths:
 
   /api/v1/farm/forget-Password:
     post:
-      summary: this endpoint is to change the users password
+      summary: this endpoint is to change the farmers password
       tags: [forget-password]
       requestBody:
         required: true
@@ -137,7 +137,7 @@ paths:
 
   /api/v1/farm/resendOtp:
     post:
-      summary: this endpoint is to reset the farmers password
+      summary: this endpoint is to resennd the farmers Otp
       tags: [resendOtp]
       requestBody:
         required: true
@@ -154,7 +154,7 @@ paths:
                   example: formatmail1@gmail.com
       responses:
         "200":
-          description: successfully reset the farmers password
+          description: successfully resent the farmers Otp
   
 
   

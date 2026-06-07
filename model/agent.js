@@ -1,8 +1,9 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
+
 
 const agentSchema = new mongoose.Schema({
     firstName: {
-        type: String,
+        type: String, 
         required: true,
         trim: true
     },
@@ -22,22 +23,39 @@ const agentSchema = new mongoose.Schema({
         trim: true,
         unique: true
     },
-    townOrVillage: {
-        type: String,
-        required: true,
+    townOrVillage:{
+        type: String, 
         trim: true
     },
     password: {
         type: String,
-        required: true,
-        minLength: 8
+        trim: true,
+        required: true
+    },
+    otp: {
+        type: String
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+     otpExpiresAt: {
+        type: Date,
+        default:  () => new Date(Date.now() + (1000 * 5 * 60))
+    },
+    kycVerified: {
+    type: Boolean,
+    default: false
     },
     role: {
         type: String, 
         default: 'agent'
     }
-}, { timestamps: true } )
 
-const agentModel = mongoose.model('agent', agentSchema)
+},  {timestamps: true})
 
+const agentModel = mongoose.model('agents', agentSchema)
 module.exports = agentModel
+
+
+

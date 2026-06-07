@@ -184,7 +184,7 @@ exports.Farmlogin = async(req, res, next) =>{
         }
 
         const token = jwt.sign(
-            {id: user._id},
+            {id: user._id, role: user.role},
             process.env.JWT_SECRET,
             {expiresIn: '1d'}
         );
@@ -246,7 +246,7 @@ exports.resendOtpforFarmers = async(req, res, next) =>{
 }
 
 
-exports.forgetPassword = async(req, res) => {
+exports.forgetPassword = async(req, res, next) => {
     try{
         const {emailOrPhone} = req.body
         const user = await farmModel.findOne({

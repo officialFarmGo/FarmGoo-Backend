@@ -7,15 +7,15 @@ exports.authenticate = (req, res, next) => {
         if(!token){
             return next({
                 message: 'invalid token',
-                statusCode: 404
+                statusCode: 401
             })
         }
         const validToken = jwt.verify(token, process.env.JWT_SECRET, (err, data)=>{
             if(err){
                 console.log(err.message)
                 return next({
-                    message: 'token Validation Code',
-                    statusCode: 500
+                    message: 'token invalid',
+                    statusCode: 401
                 })
             }
             req.user = data
