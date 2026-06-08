@@ -7,7 +7,7 @@ paths:
   /api/v1/bank/createDelivery:
     post:
       summary: create the delivery for the farmer
-      tags: [add bank for user]
+      tags: [Create delivery for the farmer]
       security: 
         - bearerAuth: []
       requestBody:
@@ -55,7 +55,9 @@ paths:
                 CustomersOtherNumber:
                   type: string
                   example: 08033858575
-                vehicleType: 6a26be437850290aa292bb55                
+                vehicleType:
+                  type: string
+                  example: 6a26be437850290aa292bb55                
       responses:
         "201":
           description: farmers delivery has been requested   

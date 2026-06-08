@@ -7,7 +7,7 @@ paths:
   /api/v1/agent/signUp:
     post:
       summary: this endpoint is to create an agent
-      tags: [Sign Up]
+      tags: [Agent]
       requestBody:
         required: true
         content: 
@@ -46,7 +46,7 @@ paths:
   /api/v1/agent/verify:
     post:
       summary: this endpoint is to verify an agents email
-      tags: [Verify Otp]
+      tags: [Agent]
       requestBody:
         required: true
         content: 
@@ -70,7 +70,7 @@ paths:
   /api/v1/agent/agentLogin:
     post:
       summary: this endpoint is to login an agent
-      tags: [login]
+      tags: [Agent]
       requestBody:
         required: true
         content: 
@@ -94,7 +94,7 @@ paths:
   /api/v1/agent/forget-Password:
     post:
       summary: this endpoint is to forget the agents password
-      tags: [forget-password]
+      tags: [Agent]
       requestBody:
         required: true
         content: 
@@ -114,7 +114,7 @@ paths:
   /api/v1/agent/reset-Password:
     post:
       summary: this endpoint is to reset the Agents password
-      tags: [reset-password]
+      tags: [Agent]
       requestBody:
         required: true
         content: 
@@ -138,7 +138,7 @@ paths:
   /api/v1/agent/resendOtp:
     post:
       summary: this endpoint is to resend the Agents otp
-      tags: [resendOtp]
+      tags: [Agent]
       requestBody:
         required: true
         content: 
