@@ -7,7 +7,7 @@ paths:
   /api/v1/driver/signUpDriver:
     post:
       summary: this endpoint is to create a Driver
-      tags: [Sign Up]
+      tags: [Driver]
       requestBody:
         required: true
         content: 
@@ -46,7 +46,7 @@ paths:
   /api/v1/driver/verifyEmail:
     post:
       summary: this endpoint is to verify a drivers email
-      tags: [Verify Otp]
+      tags: [Driver]
       requestBody:
         required: true
         content: 
@@ -70,7 +70,7 @@ paths:
   /api/v1/driver/driversLogin:
     post:
       summary: this endpoint is to login A driver
-      tags: [login]
+      tags: [Driver]
       requestBody:
         required: true
         content: 
@@ -94,7 +94,7 @@ paths:
   /api/v1/driver/forget-Password:
     post:
       summary: this endpoint is to change the drivers password
-      tags: [forget-password]
+      tags: [Driver]
       requestBody:
         required: true
         content: 
@@ -114,7 +114,7 @@ paths:
   /api/v1/driver/reset-Password:
     post:
       summary: this endpoint is to reset the Drivers password
-      tags: [reset-password]
+      tags: [Driver]
       requestBody:
         required: true
         content: 
@@ -138,7 +138,7 @@ paths:
   /api/v1/driver/resendOtp:
     post:
       summary: this endpoint is to resend the Drivers Otp
-      tags: [resendOtp]
+      tags: [Driver]
       requestBody:
         required: true
         content: 
