@@ -7,27 +7,45 @@ exports.createFarmKyc = async(req, res, next) =>{
     try{
         const farmId = req.user.id
 
-const { state, specificLocationOrLandmark, whatDoYouFarm, preferredMarketDestination, farmSize } = req.body        
-        console.log(whatDoYouFarm)
-        const cropNames = req.body.whatDoYouFarm.map((crop)=>firstLetterChanger(crop.cropsName))
-        console.log('cropNames', cropNames)
-        const whatYouFarm = await cropsModel.find({cropsName: {$in:cropNames}}) 
-        console.log('whatYouFarm', whatYouFarm)
+    const { state, specificLocationOrLandmark, whatDoYouFarm, preferredMarketDestination, farmSize } = req.body        
+        // console.log(whatDoYouFarm)
+        // const cropNames = req.body.whatDoYouFarm.map((crop)=>firstLetterChanger(crop.cropsName))
+        // console.log('cropNames', cropNames)
+        // const whatYouFarm = await cropsModel.find({cropsName: {$in:cropNames}}) 
+        // console.log('whatYouFarm', whatYouFarm)
 
-           if(whatYouFarm.length != cropNames.length){
+        //    if(whatYouFarm.length != cropNames.length){
+        //     return next({
+        //         message: 'One or more crops are invalid',
+        //         statusCode: 404
+        //     })
+        //    }
+
+        const checkKyc = await farmKycModel.findOne({ farmer: farmId })
+        if(checkKyc){
             return next({
-                message: 'One or more crops are invalid',
+                message: 'KYC already exists for this farmer',
+            })
+        } 
+
+        const theCropsName = whatDoYouFarm.split(',').map((crop)=>firstLetterChanger(crop.trim()))
+
+        const foundCrops = await cropsModel.find({cropsName: {$in:theCropsName}})
+
+        if(foundCrops.length !== theCropsName.length){
+            return next({
+                message: 'one or more crops are invalid',
                 statusCode: 404
             })
-           }
+        }
 
-
+        const cropIds = await foundCrops.map((crops)=>crops._id)
 
         const createKyc = new farmKycModel({
-               farmer: farmId,
+                farmer: farmId,
                state,
                specificLocationOrLandmark, 
-               whatDoYouFarm: whatYouFarm, 
+               whatDoYouFarm: cropIds, 
                preferredMarketDestination,
                 farmSize
 
@@ -53,7 +71,7 @@ exports.GetFarmerKyc = async(req, res, next) =>{
     try{
         const farmId = req.user.id
 
-        const findKyc = await farmKycModel.findOne({ farmer:farmId }).populate('farmer', 'firstName lastName email phoneNumber townOrVillage')
+        const findKyc = await farmKycModel.findOne({ farmer:farmId }).populate('farmer', 'firstName lastName email phoneNumber townOrVillage').populate('whatDoYouFarm', 'cropsName')
 
         if(!findKyc){
             return next({

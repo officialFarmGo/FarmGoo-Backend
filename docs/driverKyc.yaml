@@ -1,0 +1,36 @@
+/api/v1/driverKyc/createKyc:
+    post:
+      summary: this endpoint is to create a driver kyc
+      tags: [Driver KYC]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - driversLicense
+                - vehiclePhoto
+                - VehiclePapers
+                - vehicleType
+              properties:
+                driversLicense:
+                  type: string
+                  format: binary
+                  description: drivers license image
+                vehiclePhoto:
+                  type: string
+                  format: binary
+                  description: vehicle photo image
+                VehiclePapers:
+                  type: string
+                  format: binary
+                  description: vehicle papers image
+                vehicleType:
+                  type: string
+                  description: ObjectId of the vehicle type
+      responses:
+        "201":
+          description: successfully created Kyc

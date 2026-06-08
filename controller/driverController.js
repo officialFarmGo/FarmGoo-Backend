@@ -220,7 +220,8 @@ exports.resendOtpforDriver = async(req, res, next) =>{
         await brevo(user.email, user.firstName, OTP, resendOtpTemplateForDrivers(user.firstName, OTP))
 
         res.status(200).json({
-            message: 'OTP Sent successfully'
+            message: 'OTP Sent successfully',
+            data: OTP
         })
 
 

@@ -11,10 +11,11 @@ const farmKycSchema = new mongoose.Schema({
         trim: true,
         required: true
     },
-    whatDoYouFarm:{
-        type: [String],
+    whatDoYouFarm:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'crops',
         required: true
-    },
+    }],
     preferredMarketDestination: {
         type: String,
         trim: true,
