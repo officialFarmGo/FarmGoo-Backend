@@ -1,13 +1,15 @@
 openapi: 3.0.0
 info:
-  title: documentation for Drivers
+  title: documentation for the delivery made by the farmer
   version: 1.0.0
-  description: covers simple test for Driver documentation
+  description: covers simple test for farmer's delivery
 paths: 
-  /api/v1/delivery/testing:
+  /api/v1/bank/createDelivery:
     post:
-      summary: this endpoint is to get the calculated distance for the delivery
-      tags: [Get Distance]
+      summary: create the delivery for the farmer
+      tags: [add bank for user]
+      security: 
+        - bearerAuth: []
       requestBody:
         required: true
         content: 
@@ -15,16 +17,47 @@ paths:
             schema:
               type: object
               required: 
-                - origin
-                - destination
+                - productType
+                - quantity
+                - weight
+                - AddressOrpickUpLocation
+                - landMarkToAddressForPickup
+                - Destination
+                - customersPhoneNumber
+                - CustomersOtherNumber
+                - vehicleType
               properties:
-                origin:
+                productType:
                   type: string
-                  example: Ikorodu, Lagos 
-                destination:
+                  example: watermelon
+                quantity:
+                  type: string
+                  example: 5
+                weight:
+                  type: string
+                  enum: 
+                    - Kg
+                    - Tons
+                    - Bags
+                  default: Kg
+                AddressOrpickUpLocation:
+                  type: string 
+                  example: Ikorodu, Lagos
+                landMarkToAddressForPickup:
+                  type: string
+                  example: caleb university
+                Destination:
                   type: string
                   example: Mile 12 Market, Lagos
+                customersPhoneNumber:
+                  type: string
+                  example: 08034201969
+                CustomersOtherNumber:
+                  type: string
+                  example: 08033858575
+                vehicleType: 6a26be437850290aa292bb55                
       responses:
-        "200":
-          description: delivery time and distance calculated
+        "201":
+          description: farmers delivery has been requested   
 
+  

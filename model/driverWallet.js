@@ -22,7 +22,7 @@ const driverWalletSchema = new mongoose.Schema({
     
 },{timestamps: true})
 
-const driverWalletModel = mongoose.model('driverWallet', driverWalletSchema)
+const driverWalletModel = mongoose.model('driverWallets', driverWalletSchema)
 
 module.exports = driverWalletModel
 

@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: documentation for the user's bank
+  version: 1.0.0
+  description: covers simple test for user's bank
+paths: 
+  /api/v1/bank/createBank:
+    post:
+      summary: this endpoint is to add the bank to the user, be it agent, farmer or driver
+      tags: [add bank for user]
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - bankName
+                - AccountName
+                - AccountNumber
+              properties:
+                bankName:
+                  type: string
+                  example: Eco Bank
+                AccountName:
+                  type: string
+                  example: Philip Ekong
+                AccountNumber:
+                  type: string
+                  example: 89882339328923                  
+      responses:
+        "201":
+          description: user's bank successfully added       
+
+  

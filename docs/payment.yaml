@@ -1,0 +1,28 @@
+openapi: 3.0.0
+info:
+  title: documentation for the user's bank
+  version: 1.0.0
+  description: covers simple test for user's bank
+paths: 
+  /api/v1/payment/make-Payment:
+    post:
+      summary: this endpoint is to initialize payment for the user, be it agent, farmer or driver
+      tags: [initialize Payment]
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - amount
+              properties:
+                amount:
+                  type: number
+                  example: 50000            
+      responses:
+        "200":
+          description: user has initiated payment
+  

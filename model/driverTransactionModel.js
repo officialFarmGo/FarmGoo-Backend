@@ -1,19 +1,19 @@
 const mongoose = require('mongoose')
 
-const farmTransSchema = new mongoose.Schema({
-    farmer: {
+const driverTransSChema = new mongoose.Schema({
+    driver: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'farmers',
+        ref: 'drivers',
         required: true
     },
     wallet: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'farmerWallet',
+        ref: 'driverWallets',
         required: true
     },
     delivery: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'delivery'
+        ref: 'deliverys'
     },
     amount: {
         type: Number,
@@ -34,6 +34,6 @@ const farmTransSchema = new mongoose.Schema({
     }
 }, { timestamps: true })
 
-const farmTransModel = mongoose.model('farmTransaction', farmTransSchema)
+const driveTransModel = mongoose.model('driverTransaction', driverTransSChema)
 
-module.exports = farmTransModel
+module.exports = driveTransModel

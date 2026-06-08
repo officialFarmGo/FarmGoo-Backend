@@ -54,6 +54,10 @@ const driverSchema = new mongoose.Schema({
 role: {
         type: String, 
         default: 'driver'
+    },
+    isAvailable:{
+        type: Boolean,
+        default: true
     }
 
 

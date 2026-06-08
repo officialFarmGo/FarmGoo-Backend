@@ -26,6 +26,8 @@ const deliveryRoute = require('./router/deliveryRoute')
 
 const bankRouter = require('./router/bankRouter')
 
+const createDeliveryRoute = require('./router/CreateDeliveryRoute')
+
 
 const app = express()
 
@@ -53,6 +55,8 @@ app.use('/api/v1/payment', paymentRouter)
 app.use('/api/v1/delivery', deliveryRoute)
 
 app.use('/api/v1/bank', bankRouter)
+
+app.use('/api/v1/createDel', createDeliveryRoute)
 
 app.use((err, req, res, next)=>{
     const statusCode = err.statusCode || 500;
