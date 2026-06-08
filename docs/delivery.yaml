@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: covers simple test for farmer's delivery
 paths: 
-  /api/v1/bank/createDelivery:
+  /api/v1/createDel/createDelivery:
     post:
       summary: create the delivery for the farmer
       tags: [Create delivery for the farmer]
