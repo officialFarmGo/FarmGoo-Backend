@@ -16,7 +16,7 @@ exports.initializePayment = async(req, res, next) =>{
 
         let user 
         if(userRole === 'farmer'){
-             user = await farmModel.findById(id)
+             user = await farmerModel.findById(id)
         }
         else if(userRole === 'driver'){
              user = await driverModel.findById(id)

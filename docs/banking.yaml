@@ -1,0 +1,33 @@
+paths:
+  /api/v1/bank/createBank:
+    post:
+      summary: this endpoint is to add a bank account for farmers, drivers and agents
+      tags: [Bank]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - bankName
+                - AccountName
+                - AccountNumber
+              properties:
+                bankName:
+                  type: string
+                  description: name of the bank
+                  example: Access Bank
+                AccountName:
+                  type: string
+                  description: name on the bank account
+                  example: Jola Ogeremu
+                AccountNumber:
+                  type: string
+                  description: bank account number
+                  example: "0123456789"
+      responses:
+        "200":
+          description: bank added successfully

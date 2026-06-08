@@ -2,7 +2,7 @@ const swagger = require('swagger-jsdoc');
 
 const options = {
     apis: [
-        "./docs/farmer.yaml", "./docs/driver.yaml", "./docs/delivery.yaml", "./docs/agent.yaml", "./docs/farmerKyc.yaml", "./docs/driverKyc.yaml"
+        "./docs/farmer.yaml", "./docs/driver.yaml", "./docs/delivery.yaml", "./docs/agent.yaml", "./docs/farmerKyc.yaml", "./docs/driverKyc.yaml", "./docs/banking.yaml", "./docs/payment.yaml"
     ],
     
     definition: {

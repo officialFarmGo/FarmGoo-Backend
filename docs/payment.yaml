@@ -1,0 +1,22 @@
+/api/v1/payment/make-Payment:
+    post:
+      summary: this endpoint is to initialize payment for farmers, drivers and agents
+      tags: [Payment]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+              properties:
+                amount:
+                  type: number
+                  description: amount to be paid
+                  example: 5000
+      responses:
+        "200":
+          description: payment initiated successfully
