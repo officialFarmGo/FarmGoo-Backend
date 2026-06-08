@@ -12,7 +12,8 @@ const deliverySchema = new mongoose.Schema({
     },
     weight: {
         type: String,
-        enum: ["Kg", "Tons", "Bags"]
+        enum: ["Kg", "Tons", "Bags"],
+        default: "Kg"
     },
     AddressOrpickUpLocation:{
         type: String,
@@ -41,12 +42,10 @@ const deliverySchema = new mongoose.Schema({
     },
     pickupSchedule:{
         date:{
-            type: Date,
-            required: true
+            type: Date
         },
         time: {
-            type: String,
-            required: true
+            type: String
         }
     },
     vehicleType: { 
@@ -60,7 +59,7 @@ const deliverySchema = new mongoose.Schema({
 }
 },  {timestamps: true})
 
-deliveryModel = mongoose.model('delivery', deliverySchema)
+deliveryModel = mongoose.model('deliverys', deliverySchema)
 
 module.exports = deliveryModel
 

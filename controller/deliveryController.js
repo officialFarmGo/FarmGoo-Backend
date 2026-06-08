@@ -63,6 +63,9 @@ exports.createDelivery = async(req, res, next) =>{
 
     }
     catch(error){
+         next({
+            message: 'something went wrong'
+        })
 
     }
 }
