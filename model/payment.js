@@ -11,6 +11,14 @@ const paymentSchema = mongoose.Schema({
         enum: ['farmers', 'drivers', 'agents'],
         required: true
     },
+    receiver:{
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: 'ReceiverType'
+    },
+    ReceiverType: {
+        type: String,
+        enum: ['farmers', 'drivers', 'agents']
+    },
     reference: {
         type: String,
         required: true,

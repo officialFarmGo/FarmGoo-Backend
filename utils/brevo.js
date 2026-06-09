@@ -27,4 +27,7 @@ const brevo = async(userEmail, userName, otp, template) =>{
 
     }
 }
+
+
+
 module.exports = brevo

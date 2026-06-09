@@ -50,8 +50,8 @@ const driverSchema = new mongoose.Schema({
     isAvailable: {
         type: Boolean,
         default: true  
-},
-role: {
+    },
+    role: {
         type: String, 
         default: 'driver'
     },

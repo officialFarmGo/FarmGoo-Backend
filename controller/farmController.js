@@ -10,13 +10,13 @@ exports.createFarmer = async(req, res, next) =>{
     try{
         const {firstName, lastName, phoneNumber, email , townOrVillage, password} = req.body
 
-        const checkEmail = await farmModel.find({email})
-        if(checkEmail == checkEmail.email){
-            return next({
-                message: 'invalid email',
-                statusCode: 404
-            })
-        }
+        const checkEmail = await farmModel.findOne({email})
+          if(checkEmail){
+                return next({
+                message: "Email already exists",
+                 statusCode: 400
+            });
+}
 
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
 
@@ -43,29 +43,6 @@ exports.createFarmer = async(req, res, next) =>{
 
         await farmers.save()
 
-        const viewed = new farmModel({
-            firstName, 
-            lastName,
-            phoneNumber, 
-            email,
-            townOrVillage,
-            password: hashPassword,
-            otp: OTP
-            
-
-        })
-
-        if(email == null){
-            const duty = new farmModel({
-                firstName,
-                lastName,
-                phoneNumber,
-                townOrVillage,
-                password
-
-            })
-
-        }
 
         await brevo(farmers.email, farmers.firstName,  OTP, signUpOtpTemplateforFarmers(farmers.firstName, OTP))
         console.log(brevo)  
@@ -73,7 +50,16 @@ exports.createFarmer = async(req, res, next) =>{
 
         res.status(201).json({
             message: 'successfully created farmers.',
-            data: viewed
+           data: {
+                id: farmers._id,
+                firstName: farmers.firstName,
+                lastName: farmers.lastName,
+                email: farmers.email,
+                phoneNumber: farmers.phoneNumber,
+                townOrVillage: farmers.townOrVillage,
+                isVerified: farmers.isVerified,
+                kycVerified: farmers.kycVerified
+            }
         })
 
     }
@@ -192,7 +178,7 @@ exports.Farmlogin = async(req, res, next) =>{
         res.status(200).json({
             message: 'Login Successful',
             token,
-            user
+            kycVerified: user.kycVerified
         })
 
     }

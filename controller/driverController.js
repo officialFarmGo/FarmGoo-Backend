@@ -4,18 +4,19 @@ const {signUpOtpTemplateForDrivers, resetPasswordSuccessfulTemplateForDriver, fo
 const otpGenerator = require('otp-generator')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const driverWalletModel = require('../model/driverWallet')
 
 exports.createDriver = async(req, res, next) =>{
     try{
         const {firstName, lastName, phoneNumber, email , townOrVillage, password} = req.body
 
-        const user = await driverModel.find({email})
-        if(user == user.email){
-            return next({
-                message: 'invalid email',
-                statusCode: 404
-            })
-        }
+        const user = await driverModel.findOne({ email });
+        if(user){
+                return next({
+                message: "Email already exists",
+                 statusCode: 400
+            });
+}
 
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
      
@@ -39,29 +40,7 @@ exports.createDriver = async(req, res, next) =>{
 
         await driver.save()
 
-        const viewed = new driverModel({
-            firstName, 
-            lastName,
-            phoneNumber, 
-            email,
-            townOrVillage,
-            password: hashPassword,
-            otp: OTP
-            
-
-        })
-
-        if(email == null){
-            const duty = new driverModel({
-                firstName,
-                lastName,
-                phoneNumber,
-                townOrVillage,
-                password
-
-            })
-
-        }
+       
 
         await brevo(driver.email, driver.firstName,  OTP, signUpOtpTemplateForDrivers(driver.firstName, OTP))
         console.log(brevo)  
@@ -69,7 +48,16 @@ exports.createDriver = async(req, res, next) =>{
 
         res.status(201).json({
             message: 'successfully created driver.',
-            data: viewed
+            data: {
+                id: driver._id,
+                firstName: driver.firstName,
+                lastName: driver.lastName,
+                email: driver.email,
+                phoneNumber: driver.phoneNumber,
+                townOrVillage: driver.townOrVillage,
+                isVerified: driver.isVerified,
+                kycVerified: driver.kycVerified
+            }
         })
 
     }
@@ -113,6 +101,11 @@ exports.verifyOtpforDriver = async(req, res, next) =>{
         checkEmail.otpExpiresAt = null
 
         await checkEmail.save()
+
+        const existingWallet = await driverWalletModel.findOne({ driver: checkEmail._id })
+               if(!existingWallet) {
+                   await driverWalletModel.create({ driver: checkEmail._id })
+               } 
 
         const data = driverModel({
             email,
@@ -180,7 +173,8 @@ exports.driverLogin = async(req, res, next) =>{
         res.status(200).json({
             message: 'Login Successful',
             token,
-            user
+            kycVerified: user.kycVerified
+
         })
 
     }
