@@ -2,11 +2,13 @@ const driverKycModel = require('../model/driverKyc')
 const vehicleModel = require('../model/vehicleType')
 const cloudinary = require('../utils/cloudinary')
 const fs = require('fs')
+const driverModel = require('../model/driver')
+
 
 
 exports.createKyc = async(req, res, next) =>{
     try{
-        const driverid = req.user.id
+        const {driverid} = req.params
         const {vehicleType} = req.body
 
         const driverLicenseFile = req.files.driversLicense
@@ -78,6 +80,17 @@ exports.createKyc = async(req, res, next) =>{
          )
 
          await newKyc.save()
+
+         const newUpdate = await driverModel.findByIdAndUpdate(
+                     driverid,
+                     {
+                         kycVerified: true
+                 },
+                 {
+                     new: true
+         
+                 }
+                         )
         
 
         res.status(201).json({
