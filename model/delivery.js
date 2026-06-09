@@ -2,8 +2,21 @@ const mongoose = require('mongoose')
 
 
 const deliverySchema = new mongoose.Schema({
+    farmerId: {
+        type: mongoose.Schema.Types.ObjectId,  
+        ref: 'farmers',
+        required: true
+    },
+    driverId: {
+        type: mongoose.Schema.Types.ObjectId,  
+        ref: 'drivers',
+    },
     productType: {
         type: String,
+        required: true
+    },
+    amount: {
+        type: Number,
         required: true
     },
     quantity:{
@@ -12,8 +25,9 @@ const deliverySchema = new mongoose.Schema({
     },
     weight: {
         type: String,
-        enum: ["Kg", "Tons", "Bags"],
-        default: "Kg"
+        enum: ["kg", "tons", "bags"],
+        lowercase: true,
+        required: true
     },
     AddressOrpickUpLocation:{
         type: String,
@@ -40,6 +54,11 @@ const deliverySchema = new mongoose.Schema({
         trim: true,
         required: true
     },
+    trackingId: {
+         type: String,
+        trim: true,
+        required: true
+    },
     pickupSchedule:{
         date:{
             type: Date
@@ -48,9 +67,9 @@ const deliverySchema = new mongoose.Schema({
             type: String
         }
     },
-    vehicleType: { 
+    vehhicleId: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'vehicletype' 
+    ref: 'vehicletypes' 
     },
     status: {
     type: String,

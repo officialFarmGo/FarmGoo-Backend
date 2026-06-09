@@ -41,13 +41,7 @@ const driKycSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'vehicletype',
     required: true
-    },
-    kycStatus: {
-    type: String,
-    enum: ['Pending', 'Approved', 'Rejected'],
-    default: 'Pending'
     }
-
 }, {timestamps: true})
 
 const driverKycModel =  mongoose.model('driveKyc', driKycSchema)

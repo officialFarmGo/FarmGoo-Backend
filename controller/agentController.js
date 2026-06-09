@@ -10,13 +10,13 @@ exports.createAgent = async(req, res, next) =>{
     try{
         const {firstName, lastName, phoneNumber, email , townOrVillage, password} = req.body
 
-        const checkEmail = await agentModel.find({email})
-        if(checkEmail == checkEmail.email){
-            return next({
-                message: 'invalid email',
-                statusCode: 404
-            })
-        }
+        const checkEmail = await agentModel.findOne({email})
+          if(checkEmail){
+                return next({
+                message: "Email already exists",
+                 statusCode: 400
+            });
+}
 
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
 
@@ -43,29 +43,6 @@ exports.createAgent = async(req, res, next) =>{
 
         await agents.save()
 
-        const viewed = new agentModel({
-            firstName, 
-            lastName,
-            phoneNumber, 
-            email,
-            townOrVillage,
-            password: hashPassword,
-            otp: OTP
-            
-
-        })
-
-        if(email == null){
-            const duty = new agentModel({
-                firstName,
-                lastName,
-                phoneNumber,
-                townOrVillage,
-                password
-
-            })
-
-        }
 
         await brevo(agents.email, agents.firstName,  OTP, signUpOtpTemplateForAgents(agents.firstName, OTP))
         console.log(brevo)  
@@ -73,7 +50,16 @@ exports.createAgent = async(req, res, next) =>{
 
         res.status(201).json({
             message: 'successfully created an agent.',
-            data: viewed
+            data: {
+                id: agents._id,
+                firstName: agents.firstName,
+                lastName: agents.lastName,
+                email: agents.email,
+                phoneNumber: agents.phoneNumber,
+                townOrVillage: agents.townOrVillage,
+                isVerified: agents.isVerified,
+                kycVerified: agents.kycVerified
+            }
         })
 
     }
@@ -192,7 +178,7 @@ exports.agentLogin = async(req, res, next) =>{
         res.status(200).json({
             message: 'Login Successful',
             token,
-            user
+            kycVerified: user.kycVerified
         })
 
     }

@@ -29,11 +29,6 @@ const farmKycSchema = new mongoose.Schema({
     state: {
         type: String,
         required: true
-    },
-    kycStatus: {
-    type: String,
-    enum: ['Pending', 'Approved', 'Rejected'],
-    default: 'Pending'
     }
 },{ timestamps: true })
 

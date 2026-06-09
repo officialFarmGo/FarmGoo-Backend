@@ -1,11 +1,12 @@
 const farmKycModel = require('../model/farmerKyc')
+const farmModel = require('../model/farm')
 const cropsModel = require('../model/crops')
 const {firstLetterChanger} = require('../utils/highFunction')
 
 
 exports.createFarmKyc = async(req, res, next) =>{
     try{
-        const farmId = req.user.id
+        const {farmId} = req.params
 
     const { state, specificLocationOrLandmark, whatDoYouFarm, preferredMarketDestination, farmSize } = req.body        
         // console.log(whatDoYouFarm)
@@ -22,6 +23,8 @@ exports.createFarmKyc = async(req, res, next) =>{
         //    }
 
         const checkKyc = await farmKycModel.findOne({ farmer: farmId })
+        const farmer = await farmModel.findById(farmId);
+        console.log("farmer:", farmer);
         if(checkKyc){
             return next({
                 message: 'KYC already exists for this farmer',
@@ -51,6 +54,18 @@ exports.createFarmKyc = async(req, res, next) =>{
 
         })
         await createKyc.save()
+        console.log("farmId:", farmId);
+
+        const newUpdate = await farmModel.findByIdAndUpdate(
+            farmId,
+            {
+                kycVerified: true
+        },
+        {
+            new: true
+
+        }
+                )
 
         res.status(200).json({
             message: 'kyc for farmer created',
@@ -79,6 +94,8 @@ exports.GetFarmerKyc = async(req, res, next) =>{
                 statusCode: 404
             })
             }
+
+            
 
         res.status(200).json({
             message: 'successfully gotten kyc',

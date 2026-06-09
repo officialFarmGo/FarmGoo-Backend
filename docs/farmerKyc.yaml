@@ -4,12 +4,13 @@ info:
   version: 1.0.0
   description: covers simple test for Farmers KYC
 paths: 
-  /api/v1/farmKyc/create:
+  /api/v1/farmKyc/create/{farmId}:
     post:
       summary: this endpoint is to create the kyc for farmer
+      parameters:
+        - in: path
+          name: farmId
       tags: [create farmer KYC]
-      security: 
-        - bearerAuth: []
       requestBody:
         required: true
         content: 
@@ -40,7 +41,7 @@ paths:
                   example: Small                  
       responses:
         "201":
-          description: user successfully created       
+          description: farmer's kyc successfully created       
 
   /api/v1/farmKyc/getKyc:
     get:
