@@ -4,9 +4,12 @@ info:
   version: 1.0.0
   description: covers simple test for farmer's delivery
 paths: 
-  /api/v1/createDel/createDelivery:
+  /api/v1/createDel/createDelivery/{vehhicleId}:
     post:
-      summary: create the delivery for the farmer
+      summary: create the delivery for the farmer using the vehicle that the driver has listed
+      parameters:
+        - in: path
+          name: vehhicleId
       tags: [Create delivery for the farmer]
       security: 
         - bearerAuth: []
