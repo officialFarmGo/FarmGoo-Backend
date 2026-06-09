@@ -6,7 +6,7 @@ const {authenticate} = require('../middleWare/auth')
 
 router.post('/make-Payment', authenticate, initializePayment)
 
-router.post('/make-Payment/:receiverId', initializePayment)
+router.post('/make-Payment/:receiverId',authenticate, initializePayment)
 
 router.get('/verify-Payment', authenticate, verifyPayment)
 
