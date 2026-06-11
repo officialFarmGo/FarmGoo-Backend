@@ -87,6 +87,9 @@ const deliverySchema = new mongoose.Schema({
     PIN: {
         type: String,
         required: true
+    },
+    estimatedDuration: {
+        type: String
     }
 
 },  {timestamps: true})

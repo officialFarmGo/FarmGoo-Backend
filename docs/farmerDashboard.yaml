@@ -7,4 +7,14 @@
       responses:
         "200":
           description: successfully gotten the farmers dashBoard overview
+
+/api/v1/farmerDash/activeDeliveries:
+   get:
+      summary: this endpoint is to get the farmers active deliveries Overview
+      tags: [farmers active Overview]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten the farmers active deliveries
   

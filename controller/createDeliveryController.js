@@ -143,7 +143,8 @@ exports.createDelivery = async (req, res, next) => {
       CustomersOtherNumber,
       pickupSchedule,
       vehhicleId: vehicle._id,
-      totalFare
+      totalFare,
+      estimatedDuration: duration
     });
 
     const drivers = await driverModel.find({
