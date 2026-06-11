@@ -1,4 +1,4 @@
-const agentdeliveryModel = require("../model/agentDelievery");
+const agentdeliveryModel = require("../model/agentDelivery");
 const agentModel = require("../model/agent");
 
 exports.createDelivery = async (req, res, next) => {
@@ -7,15 +7,14 @@ exports.createDelivery = async (req, res, next) => {
              selectFarmer, 
              producetype, 
              qualityCheckDelivery, 
-             pickupLocation, 
+             pickupLocation,  
              destination, 
              customerDetails, 
              pickupDate, 
              vehicleType 
             } = req.body;
 
-        const agentid = req.agent.id
-
+        const agentid = req.user.id;
         const delivery = new agentdeliveryModel({
             selectFarmer,
             producetype,

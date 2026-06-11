@@ -18,6 +18,8 @@ const vehcRouter = require('./router/vehicleModel')
 
 const agentRouter = require('./router/agentRouter')
 
+const agentDeliveryRouter = require('./router/agentDeliveryRouter')
+
 const driverKycRouter = require('./router/driverKycRouter')
 
 const paymentRouter = require('./router/paymentRouter')
@@ -42,6 +44,7 @@ app.use('/api/v1/crop', cropRouter)
 
 app.use('/api/v1/farmKyc', farmkycRouter)
 app.use('/api/v1/agent', agentRouter)
+app.use('/api/v1/agentDelivery', agentDeliveryRouter)
 
 
 app.use('/api/v1/vehicle', vehcRouter)

@@ -15,7 +15,7 @@ const agentdeliverySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    quaCheckDelivery: {
+    quantityCheckDelivery: {
         type: String,
         required: true,
     },
@@ -49,5 +49,4 @@ const agentdeliverySchema = new mongoose.Schema({
 
 const agentdeliveryModel = mongoose.model('agentdelivery', agentdeliverySchema)
 
-// module.exports
-
+module.exports = agentdeliveryModel
