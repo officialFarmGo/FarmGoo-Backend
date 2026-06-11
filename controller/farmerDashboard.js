@@ -91,6 +91,7 @@ exports.dashBoardOverview = async(req, res, next) =>{
              ])
 
          const weatherAlert = await getWeatherAlert(farmer.townOrVillage || 'Lagos')
+         console.log('API KEY:', process.env.OPENWEATHER_API_KEY)
 
 
          res.status(200).json({
