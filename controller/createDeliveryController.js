@@ -326,7 +326,8 @@ exports.completeDelivery = async(req, res, next) =>{
 
     await farmWalletModel.findOneAndUpdate(
         {farmer:deliveries.farmerId},
-        {$inc: {escrowBalance: -deliveries.totalFare}}
+        {$inc: {escrowBalance: -deliveries.totalFare}},
+        {session}
     
     )
 
@@ -350,6 +351,12 @@ exports.completeDelivery = async(req, res, next) =>{
         {delivery: deliveries._id},
         {status: 'completed'},
         {session}
+        )
+
+        await driverModel.findByIdAndUpdate(
+         driverId,
+        { isAvailable: true },
+        { session }
         )
 
         await session.commitTransaction()

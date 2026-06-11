@@ -5,7 +5,7 @@ info:
   description: covers simple test for farmer's delivery
 paths: 
   /api/v1/delivery/createDelivery/{vehhicleId}:
-    post:
+    patch:
       summary: create the delivery for the farmer using the vehicle that the driver has listed
       parameters:
         - in: path
@@ -63,6 +63,46 @@ paths:
                   example: 6a26be437850290aa292bb55                
       responses:
         "201":
-          description: farmers delivery has been requested   
+          description: farmers delivery has been requested 
+
+  /api/v1/delivery/accept-Delivery/{deliveryId}:
+    post:
+      summary: this endpoint is for the driver to accept the delivery with the delivery's ID in the params and the driver is logged in
+      parameters:
+        - in: path
+          name: deliveryId
+      tags: [Accept Delivery by driver]
+      security: 
+        - bearerAuth: []
+      responses:
+        "201":
+          description: farmers delivery has been accepted by a driver.
+
+  /api/v1/delivery/completeDelivery/{deliveryId}:
+    post:
+      summary: create the delivery for the farmer using the vehicle that the driver has listed
+      parameters:
+        - in: path
+          name: deliveryId
+      tags: [Complete delivery]
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - PIN
+              properties:
+                PIN:
+                  type: string
+                  example: 1234              
+      responses:
+        "201":
+          description: delivery has been completed   
+
+    
 
   

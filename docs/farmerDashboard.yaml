@@ -1,0 +1,10 @@
+/api/v1/farmerDash/:
+   get:
+      summary: this endpoint is to get the farmers dashboard Overview
+      tags: [get a farmers DashBoard Overview, the farmer has to be logged in]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten the farmers dashBoard overview
+  
