@@ -29,8 +29,8 @@ const farmTransSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Successful', 'Failed'],
-        default: 'Pending'
+        enum: ['Pending Release', 'successful','completed', 'Failed'],
+        default: 'Pending Release'
     }
 }, { timestamps: true })
 

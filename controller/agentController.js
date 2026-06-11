@@ -16,7 +16,16 @@ exports.createAgent = async(req, res, next) =>{
                 message: "Email already exists",
                  statusCode: 400
             });
-}
+        }
+
+        const checkPhone = await agentModel.findOne({phoneNumber})
+                if(checkPhone){
+                    return next({
+                        message: "Phone number already exists",
+                         statusCode: 400
+                    });
+                }
+                    
 
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
 

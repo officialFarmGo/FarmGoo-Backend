@@ -11,6 +11,14 @@ const deliverySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,  
         ref: 'drivers',
     },
+    totalFare: {
+    type: Number,
+    required: true 
+    },
+    commission: {
+    type: Number,
+    required: true 
+    },
     productType: {
         type: String,
         required: true
@@ -75,7 +83,12 @@ const deliverySchema = new mongoose.Schema({
     type: String,
     enum: ["Pending", "Accepted", "In Transit", "Delivered"],
     default: "Pending"
-}
+},
+    PIN: {
+        type: String,
+        required: true
+    }
+
 },  {timestamps: true})
 
 deliveryModel = mongoose.model('deliverys', deliverySchema)
