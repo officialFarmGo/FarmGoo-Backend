@@ -18,6 +18,15 @@ exports.createDriver = async(req, res, next) =>{
             });
 }
 
+
+     const checkPhone = await driverModel.findOne({phoneNumber})
+                if(checkPhone){
+                    return next({
+                        message: "Phone number already exists",
+                         statusCode: 400
+                    });
+                }
+
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
      
 
@@ -247,6 +256,7 @@ exports.forgetPasswordDriv = async(req, res, next) => {
             })
         
         }
+        
 
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
      user.otp = OTP

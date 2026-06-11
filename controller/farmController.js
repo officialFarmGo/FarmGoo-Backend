@@ -15,9 +15,17 @@ exports.createFarmer = async(req, res, next) =>{
                 return next({
                 message: "Email already exists",
                  statusCode: 400
-            });
+            });    
 }
 
+     const checkPhone = await farmModel.findOne({phoneNumber})
+       if(checkPhone){
+        return next({
+            message: 'phoneNumber already exists',
+            statusCode: 400
+        })
+       }
+       
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
 
      const expiresAt = new Date(Date.now() + 1000 * 60 * 5)

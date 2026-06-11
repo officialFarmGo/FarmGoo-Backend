@@ -22,11 +22,15 @@ const driverKycRouter = require('./router/driverKycRouter')
 
 const paymentRouter = require('./router/paymentRouter')
 
-const deliveryRoute = require('./router/deliveryRoute')
+const deliveryRoute = require('./router/CreateDeliveryRoute')
 
 const bankRouter = require('./router/bankRouter')
 
-const createDeliveryRoute = require('./router/CreateDeliveryRoute')
+const marketRouter = require('./router/marketTips')
+
+const farmerDashBoard = require('./router/farmerDashBoard')
+
+
 
 
 const app = express()
@@ -56,7 +60,10 @@ app.use('/api/v1/delivery', deliveryRoute)
 
 app.use('/api/v1/bank', bankRouter)
 
-app.use('/api/v1/createDel', createDeliveryRoute)
+app.use('/api/v1/marketT', marketRouter)
+
+app.use('/api/v1/farmerDash', farmerDashBoard)
+
 
 app.use((err, req, res, next)=>{
     const statusCode = err.statusCode || 500;
