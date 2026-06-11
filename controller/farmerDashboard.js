@@ -121,3 +121,72 @@ exports.dashBoardOverview = async(req, res, next) =>{
 
     }
 }
+
+
+
+
+exports.activeDeliveriesOverview = async(req, res, next) =>{
+    try{
+        const farmerId = req.user.id
+
+        const farmer = await farmModel.findById(farmerId)
+        if(!farmer){
+            return next({
+                message: 'farmer not found',
+                statusCode: 404
+            })
+        }
+
+        const [
+            totalDeliveryCount,
+            pendingDeliveryCount,
+            acceptedDeliveryCount,
+            DeliveredDeliveryCount,
+            activeDeliveries
+        ] = await Promise.all([
+            deliveryModel.countDocuments({
+                farmerId,
+                status: {$in: ["Pending", "Accepted", "In Transit", "Delivered"]}
+            }),
+             deliveryModel.countDocuments({
+                farmerId,
+                status: 'Pending'
+            }),
+             deliveryModel.countDocuments({
+                farmerId,
+                status: 'Accepted'
+             }),
+             deliveryModel.countDocuments({
+                farmerId,
+                status: 'Delivered' 
+             }),
+             deliveryModel.find({
+                farmerId,
+                status: {$in: ['Accepted', 'In Transit', 'Pending']}
+                }).select('productType quantity weight trackingId status AddressOrpickUpLocation Destination estimatedDuration totalFare')
+                .populate('driverId', 'firstName lastName phoneNumber')
+                .sort({createdAt: -1})
+        ])
+
+        res.status(200).json({
+            message: 'successfully gotten all active deliveries',
+            data: {
+                status: {
+                    total: totalDeliveryCount,
+            pending: pendingDeliveryCount,
+            Accepted: acceptedDeliveryCount,
+           Delivered:  DeliveredDeliveryCount
+                },
+             activeDeliveries
+            }
+        })
+    }
+    catch(error){
+        console.log(error.message)
+        return next({
+            message: 'something went wrong',
+            statusCode: 500
+        })
+
+    }
+}
