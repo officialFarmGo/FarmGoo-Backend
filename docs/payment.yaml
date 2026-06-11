@@ -25,30 +25,3 @@ paths:
       responses:
         "200":
           description: user has initiated payment
-  
-  /api/v1/payment/make-Payment/{receiverId}:
-    post:
-      summary: this endpoint is to initialize payment for the delivery to the driver who is the receiver
-      parameters:
-        - in: path
-          name: receiverId 
-      tags: [initialize Payment]
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content: 
-          application/json:
-            schema:
-              type: object
-              required: 
-                - amount
-              properties:
-                amount:
-                  type: number
-                  example: 50000            
-      responses:
-        "200":
-          description: user has initiated payment
-  
-  
