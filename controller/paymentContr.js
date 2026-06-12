@@ -202,7 +202,7 @@ exports.handlePaymentWebhook = async(req, res, next) => {
     try {
         console.log(' WEBHOOK RECEIVED') 
         const hash = crypto
-            .createHmac('sha256', process.env.KORA_SECRET_KEY)
+            .createHmac('sha256', process.env.koraSecretkey)
             .update(JSON.stringify(req.body.data))
             .digest('hex')
 
