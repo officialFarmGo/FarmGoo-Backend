@@ -312,13 +312,13 @@ exports.completeDelivery = async(req, res, next) =>{
                 statusCode: 404
             })
         }
-        if(!PIN){
+        if(deliveries.PIN !== PIN){
             await session.abortTransaction()
             return next({
-                message: 'Invalid Pin',
-                statusCode: 400
-            })
-        }
+                     message: 'Invalid PIN',
+                    statusCode: 400
+                })
+            }
 
         await deliveryModel.findByIdAndUpdate(deliveryId,
             {status: 'Delivered'},
