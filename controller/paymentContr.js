@@ -200,7 +200,7 @@ const crypto = require('crypto')
 
 exports.handlePaymentWebhook = async(req, res, next) => {
     try {
-        // 1. Verify the request is actually from Korapay
+        console.log(' WEBHOOK RECEIVED') 
         const hash = crypto
             .createHmac('sha256', process.env.KORA_SECRET_KEY)
             .update(JSON.stringify(req.body.data))
@@ -212,6 +212,8 @@ exports.handlePaymentWebhook = async(req, res, next) => {
 
         const event = req.body.event
         const data = req.body.data
+          console.log('event:', req.body.event)
+        console.log('data:', req.body.data)
 
         if(event === 'charge.success') {
             const reference = data.reference
