@@ -66,7 +66,7 @@ paths:
           description: farmers delivery has been requested 
 
   /api/v1/delivery/accept-Delivery/{deliveryId}:
-    post:
+    patch:
       summary: this endpoint is for the driver to accept the delivery with the delivery's ID in the params and the driver is logged in
       parameters:
         - in: path
