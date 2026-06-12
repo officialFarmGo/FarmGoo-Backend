@@ -12,10 +12,11 @@ exports.signUpValidator = (req, res, next) =>{
             "string.empty": "Last name cannot be empty",
             'string.pattern.base': "Last name cannot contain numbers, or spaces and must be at least 4 characters",
         }), 
-        email:joi.string().email().messages({
+        email:joi.string().email().required().messages({
+          'string.email': 'Email must be valid',
+            "string.empty": "Email cannot be empty",
             'string.email': 'Email must be valid'
-
-        }),
+                }),
         phoneNumber: joi.string().pattern(/^\d{11}$/).required().messages({
             'any.required': 'Phone Number is required',
             'string.empty': 'phone Number cannot be empty',
