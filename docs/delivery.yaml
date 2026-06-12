@@ -5,7 +5,7 @@ info:
   description: covers simple test for farmer's delivery
 paths: 
   /api/v1/delivery/createDelivery/{vehhicleId}:
-    patch:
+    post:
       summary: create the delivery for the farmer using the vehicle that the driver has listed
       parameters:
         - in: path
