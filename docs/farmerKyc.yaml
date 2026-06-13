@@ -52,4 +52,12 @@ paths:
       responses:
         "200":
           description: successfully gotten a farmers kyc
+
+  /api/v1/vehicle/allVehic:
+    get:
+      summary: this endpoint is to get all Vehicle types
+      tags: [get all Vehicle types]
+      responses:
+        "200":
+          description: successfully gotten all vehicle types
   

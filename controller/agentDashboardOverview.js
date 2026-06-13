@@ -83,24 +83,24 @@ exports.agentDashboardOverview = async(req, res, next) => {
                 .limit(3)
         ])
 
-        // build recent activity feed - merge all 3 sources and sort by date
-        let recentActivity = []
+            
+            let recentActivity = []
 
-        recentDeliveries.forEach(d => {
-            recentActivity.push({
-                type: 'Delivery Completed',
-                title: `${d.produceType} - ${d.pickupLocation} to ${d.Destination}`,
-                date: d.updatedAt
+            recentDeliveries.forEach(d => {
+                recentActivity.push({
+                    type: 'Delivery Completed',
+                    title: `${d.produceType} - ${d.pickupLocation} to ${d.Destination}`,
+                    date: d.updatedAt
+                })
             })
-        })
 
-        recentFarmers.forEach(f => {
-            recentActivity.push({
-                type: 'New Farmer Added',
-                title: f.farmerFullName,
-                date: f.createdAt
+            recentFarmers.forEach(f => {
+                recentActivity.push({
+                    type: 'New Farmer Added',
+                    title: f.farmerFullName,
+                    date: f.createdAt
+                })
             })
-        })
 
         recentRequests.forEach(r => {
             recentActivity.push({
@@ -110,7 +110,6 @@ exports.agentDashboardOverview = async(req, res, next) => {
             })
         })
 
-        // sort all by date, most recent first, take top 3
         recentActivity = recentActivity
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 3)
@@ -142,17 +141,13 @@ exports.myFarmersOverview = async(req, res, next) => {
 
         const [farmers, totalFarmersCount, totalDeliveriesCount, totalCommissions] = await Promise.all([
 
-            // all farmers belonging to this agent
             agentFarmerModel.find({ agent: agentId })
                 .sort({ createdAt: -1 }),
 
-            // total farmers count
             agentFarmerModel.countDocuments({ agent: agentId }),
 
-            // total deliveries across all farmers
             agentDeliveryModel.countDocuments({ agentId }),
 
-            // total commissions earned (from delivered deliveries)
             agentDeliveryModel.aggregate([
                 {
                     $match: {
@@ -169,7 +164,6 @@ exports.myFarmersOverview = async(req, res, next) => {
             ])
         ])
 
-        // for each farmer, get their delivery count
         const farmersWithDeliveryCount = await Promise.all(
             farmers.map(async(farmer) => {
                 const deliveryCount = await agentDeliveryModel.countDocuments({
