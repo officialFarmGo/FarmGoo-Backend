@@ -1,0 +1,92 @@
+openapi: 3.0.0
+info:
+  title: documentation for the delivery made by the farmer
+  version: 1.0.0
+  description: covers simple test for farmer's delivery
+paths: 
+  /api/v1/agentDelivery/createDelivery/{vehhicleId}:
+    post:
+      summary: create the delivery for the agent's Farmer using the vehicle that the driver has listed
+      parameters:
+        - in: path
+          name: vehhicleId
+      tags: [Create delivery for the farmer]
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - agentFarmerId
+                - produceType
+                - quantity
+                - pickupLocation
+                - Destination
+                - customersDetails
+              properties:
+                agentFarmerId:
+                  type: string
+                  example: 6a2d8938b7543a8e12cd175a
+                produceType:
+                  type: string
+                  example: watermelon
+                quantity:
+                  type: string
+                  example: 500kg
+                pickupLocation:
+                  type: string 
+                  example: Ikorodu, Lagos
+                Destination:
+                  type: string
+                  example: Mile 12 Market, Lagos
+                customersDetails:
+                  type: string
+                  example: 08034201969           
+      responses:
+        "201":
+          description: Agents farmers delivery has been requested 
+
+  /api/v1/agentDelivery/acceptDelivery/{deliveryId}:
+    patch:
+      summary: this endpoint is for the driver to accept the delivery of the agent with the delivery's ID in the params and the driver is logged in
+      parameters:
+        - in: path
+          name: deliveryId
+      tags: [Accept Agents delivery]
+      security: 
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Agents farmers delivery has been accepted by a driver.
+
+  /api/v1/agentDelivery/completeDelivery/{deliveryId}:
+    post:
+      summary: create the delivery for the farmer using the vehicle that the driver has listed
+      parameters:
+        - in: path
+          name: deliveryId
+      tags: [Complete delivery]
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - PIN
+              properties:
+                PIN:
+                  type: string
+                  example: 1234              
+      responses:
+        "201":
+          description: Agents farmers delivery has been completed   
+
+    
+
+  

@@ -1,52 +1,74 @@
 const mongoose = require("mongoose");
-const agentModel = require("./agent");
 
-const agentdeliverySchema = new mongoose.Schema({
-    agentid: {
+const agentDeliverySchema = new mongoose.Schema({
+    agentId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "agents",
         required: true
     },
-    selectFarmer: {
-        type: String,
-        required: true,
+    agentFarmerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "agentFarmer",
+        required: true
     },
-    producetype: {
-        type: String,
-        required: true,
+    driverId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'drivers'
     },
-    quantityCheckDelivery: {
+    trackingId: {
         type: String,
-        required: true,
+        unique: true  
+    },
+    PIN: {
+        type: String 
+    },
+    produceType: {
+        type: String,
+        required: true
+    },
+    quantity: {
+        type: String,
+        required: true
     },
     pickupLocation: {
         type: String,
-        required: true,
+        trim: true,
+        required: true
     },
-    destination: {
+    Destination: {
         type: String,
-        required: true,
+        trim: true,
+        required: true
     },
-    customerDetails: {
+    customersDetails: {
         type: String,
-        required: true,
+        trim: true,
+        required: true
     },
-    customerDetails: {
+    vehicleType: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'vehicletype',  
+        required: true
+    },
+    totalFare: {
+        type: Number  
+    },
+    commission: {
+        type: Number  
+    },
+    amount: {
+        type: Number 
+    },
+    estimatedDuration: {
+        type: String  
+    },
+    status: {
         type: String,
-        required: true,
-    },
-    pickupDate: {
-        type: Date,
-        required: true,
-    },
-    vehicleTYpe: { 
-        type: String,
-        required: true,
-    },
+        enum: ['Pending', 'Accepted', 'In Transit', 'Delivered'],
+        default: 'Pending'
+    }
+}, { timestamps: true })
 
+const agentDeliveryModel = mongoose.model('agentDelivery', agentDeliverySchema)
 
-});  
-
-const agentdeliveryModel = mongoose.model('agentdelivery', agentdeliverySchema)
-
-module.exports = agentdeliveryModel
+module.exports = agentDeliveryModel

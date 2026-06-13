@@ -168,3 +168,38 @@ exports.loginValidator = (req, res, next) =>{
     next()
 
 }
+
+
+exports.agentFarmerValidation = (req, res, next) => {
+    const schema = joi.object({
+         farmerFullName: joi.string().trim().pattern(/^[A-Za-z\s]{4,}$/).required().messages({
+            'any.required': "Full Name is required",
+            "string.empty": "Full name cannot be empty",
+            'string.pattern.base': "Full name cannot contain numbers and must be at least 4 characters",
+        }), 
+        phoneNumber: joi.string().pattern(/^\d{11}$/).required().messages({
+            'any.required': 'Phone Number is required',
+            'string.empty': 'phone Number cannot be empty',
+            'string.pattern.base': 'phone number must contain 11 digits'
+        }),
+        farmLocation: joi.string().trim().pattern(/^[A-Za-z\s]{4,}$/).required().messages({
+            'any.required': "Town or Village is required",
+            "string.empty": "Town or Village cannot be empty",
+            'string.pattern.base': "Town or Village cannot contain numbers and must be at least 4 characters",
+        }), 
+        
+    })
+
+    const { error} = schema.validate(req.body);
+    //console.log(error.details[0])
+    if(error){
+        return res.status(400).json({
+            message: error.details[0].message
+        })
+    }
+
+
+    next()
+   
+    
+}

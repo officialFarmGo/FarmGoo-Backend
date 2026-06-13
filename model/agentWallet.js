@@ -22,7 +22,7 @@ const agentWalletSchema = new mongoose.Schema({
     
 },{timestamps: true})
 
-const agentWalletModel = mongoose.model('agentWallet', agentWalletSchema)
+const agentWalletModel = mongoose.model('agentWallets', agentWalletSchema)
 
 module.exports = agentWalletModel
 
