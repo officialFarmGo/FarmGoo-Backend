@@ -27,3 +27,23 @@ exports.createVehicleType = async(req, res, next) =>{
 
     }
 }
+
+
+exports.getAllVehicles = async(req, res, next) =>{
+    try{
+        const tryToget = await vehicleModel.find()
+
+        res.status(200).json({
+            message: 'successfully gotten all vehicles',
+            data: tryToget
+        })
+
+    }
+    catch(error){
+        console.log(error.message)
+        return next({
+            message: 'something went wrong',
+            statusCode: 404
+        })
+    }
+}

@@ -81,32 +81,27 @@ exports.agentCreateDelivery = async (req, res, next) => {
             customersDetails
         } = req.body
 
-        // 1. verify agent exists
         const agent = await agentModel.findById(agentId)
         if (!agent) {
             return next({ message: 'Agent not found', statusCode: 404 })
         }
 
-        // 2. verify the selected farmer belongs to this agent
         const agentFarmer = await agentFarmerModel.findById(agentFarmerId)
         if (!agentFarmer) {
             return next({ message: 'Farmer not found', statusCode: 404 })
         }
 
-        // 3. generate PIN
         const PIN = otpGenerator.generate(4, {
             upperCaseAlphabets: false,
             lowerCaseAlphabets: false,
             specialChars: false
         })
 
-        // 4. get vehicle
         const vehicle = await vehicleModel.findById(vehhicleId)
         if (!vehicle) {
             return next({ message: 'Vehicle type not found', statusCode: 404 })
         }
 
-        // 5. get distance from Google Maps
         const { distanceKm, duration } = await getDistance(
             pickupLocation,
             Destination
@@ -116,7 +111,6 @@ exports.agentCreateDelivery = async (req, res, next) => {
         const commission = Math.round((10 / 100) * totalFare)
         const amount = Math.round(totalFare + commission)
 
-        // 7. check agent wallet balance
         const agentWallet = await agentWalletModel.findOne({ agent: agentId })
         if (!agentWallet) {
             return next({ message: 'Wallet not found', statusCode: 404 })
@@ -129,10 +123,8 @@ exports.agentCreateDelivery = async (req, res, next) => {
             })
         }
 
-        // 8. generate tracking ID
         const trackingId = await generateTrackingId()
 
-        // 9. create delivery
         const delivery = await agentDeliveryModel.create({
             agentId,
             agentFarmerId,
@@ -191,7 +183,6 @@ exports.agentDeliveryAccept = async (req, res, next) => {
         const driverId = req.user.id
         const { deliveryId } = req.params
 
-        // 1. lock delivery — only pending can be accepted
         const delivery = await agentDeliveryModel.findOneAndUpdate(
             {
                 _id: deliveryId,
@@ -212,7 +203,6 @@ exports.agentDeliveryAccept = async (req, res, next) => {
             })
         }
 
-        // 2. deduct from agent wallet — full amount (totalFare + commission)
         const agentWallet = await agentWalletModel.findOneAndUpdate(
             {
                 agent: delivery.agentId,
@@ -220,8 +210,8 @@ exports.agentDeliveryAccept = async (req, res, next) => {
             },
             {
                 $inc: {
-                    availableBalance: -delivery.amount,  // deduct full amount
-                    escrowBalance: +delivery.totalFare   // hold totalFare in escrow
+                    availableBalance: -delivery.amount,  
+                    escrowBalance: +delivery.totalFare   
                 }
             },
             { new: true, session }
@@ -235,7 +225,6 @@ exports.agentDeliveryAccept = async (req, res, next) => {
             })
         }
 
-        // 3. create agent transaction record
         await agentTransModel.create([{
             agent: delivery.agentId,
             wallet: agentWallet._id,
@@ -246,7 +235,6 @@ exports.agentDeliveryAccept = async (req, res, next) => {
             status: 'Pending'
         }], { session })
 
-        // 4. set driver unavailable
         await driverModel.findByIdAndUpdate(
             driverId,
             { isAvailable: false },
@@ -281,7 +269,6 @@ exports.agentCompleteDelivery = async (req, res, next) => {
         const { deliveryId } = req.params
         const { PIN } = req.body
 
-        // 1. find delivery
         const delivery = await agentDeliveryModel.findOne({
             _id: deliveryId,
             driverId,
@@ -293,34 +280,29 @@ exports.agentCompleteDelivery = async (req, res, next) => {
             return next({ message: 'Delivery not found', statusCode: 404 })
         }
 
-        // 2. verify PIN
         if (delivery.PIN !== PIN) {
             await session.abortTransaction()
             return next({ message: 'Invalid PIN', statusCode: 400 })
         }
 
-        // 3. update delivery status
         await agentDeliveryModel.findByIdAndUpdate(
             deliveryId,
             { status: 'Delivered' },
             { session }
         )
 
-        // 4. release from agent escrow
         await agentWalletModel.findOneAndUpdate(
             { agent: delivery.agentId },
             { $inc: { escrowBalance: -delivery.totalFare } },
             { session }
         )
 
-        // 5. credit driver wallet
         const driverWallet = await driverWalletModel.findOneAndUpdate(
             { driver: driverId },
             { $inc: { availableBalance: +delivery.totalFare } },
             { new: true, session }
         )
 
-        // 6. create driver transaction record
         await driveTransModel.create([{
             driver: driverId,
             wallet: driverWallet._id,
@@ -331,14 +313,12 @@ exports.agentCompleteDelivery = async (req, res, next) => {
             status: 'Successful'
         }], { session })
 
-        // 7. update agent transaction status
         await agentTransModel.findOneAndUpdate(
             { delivery: delivery._id },
             { status: 'Completed' },
             { session }
         )
 
-        // 8. set driver back to available
         await driverModel.findByIdAndUpdate(
             driverId,
             { isAvailable: true },
