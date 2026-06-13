@@ -1,7 +1,12 @@
 const router = require("express").Router();
 
-const { createDelivery } = require("../controller/AgentdeliveryController");
+const { agentCreateDelivery , agentCompleteDelivery, agentDeliveryAccept} = require("../controller/AgentdeliveryController");
 const { authenticate } = require("../middleWare/auth");
-router.post('/createDelivery', authenticate, createDelivery)
+router.post('/createDelivery/:vehhicleId', authenticate, agentCreateDelivery)
+
+router.patch('/acceptDelivery/:deliveryId', authenticate, agentDeliveryAccept)
+
+router.post('/completeDelivery/:deliveryId', authenticate, agentCompleteDelivery)
+
 
 module.exports = router;

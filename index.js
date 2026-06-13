@@ -32,6 +32,10 @@ const marketRouter = require('./router/marketTips')
 
 const farmerDashBoard = require('./router/farmerDashBoard')
 
+const driverDashBoard = require('./router/driverDashboard')
+
+const agentDashboardRouter = require('./router/agentDashboardRouter')
+
 
 
 
@@ -66,6 +70,11 @@ app.use('/api/v1/bank', bankRouter)
 app.use('/api/v1/marketT', marketRouter)
 
 app.use('/api/v1/farmerDash', farmerDashBoard)
+
+app.use('/api/v1/driverDash', driverDashBoard )
+
+app.use('/api/v1/agentDashboard', agentDashboardRouter)
+
 
 
 app.use((err, req, res, next)=>{

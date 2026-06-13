@@ -3,7 +3,9 @@ const router = require("express").Router();
 
 const {createAgent, agentLogin, resendOtpforAgents, forgetPassword, resetPassword, verifyOtp} = require('../controller/agentController')
 
-const {signUpValidator, verifyOtpValidator, resetPasswordValidator, resendOTPValidator} = require('../middleWare/onBValidations')
+const {signUpValidator, verifyOtpValidator, resetPasswordValidator, resendOTPValidator, agentFarmerValidation} = require('../middleWare/onBValidations')
+
+const {createAgentFarmer} = require('../controller/creatAgentFarmer')
 
 const {authenticate} = require('../middleWare/auth')
 
@@ -18,5 +20,7 @@ router.post('/forget-Password', forgetPassword)
 router.post('/reset-Password', resetPasswordValidator, resetPassword)
 
 router.post('/resendOtp', resendOTPValidator, resendOtpforAgents)
+
+router.post('/createAgentFarmer', authenticate, agentFarmerValidation, createAgentFarmer)
 
 module.exports = router;
