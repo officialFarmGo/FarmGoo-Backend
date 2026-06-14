@@ -244,4 +244,69 @@ exports.getFarmerWallet = async(req, res, next) => {
 }
 
 
+exports.farmerTrackDelivery = async(req, res, next) => {
+    try {
+        const farmerId = req.user.id
+        const { deliveryId } = req.params
 
+        const delivery = await deliveryModel.findOne({
+            _id: deliveryId,
+            farmerId
+        })
+        .populate('driverId', 'firstName lastName phoneNumber')
+        .populate('vehhicleId', 'vehicleType')
+
+        if(!delivery) {
+            return next({ message: 'delivery not found', statusCode: 404 })
+        }
+
+        // get weather for the route
+        const weatherAlert = await getWeatherAlert(delivery.AddressOrpickUpLocation)
+
+        // escrow status based on delivery status
+        let escrowStatus = 'Not Started'
+        if(delivery.status === 'Accepted') escrowStatus = 'Held'
+        if(delivery.status === 'In Transit') escrowStatus = 'Held'
+        if(delivery.status === 'Delivered') escrowStatus = 'Released'
+
+        res.status(200).json({
+            message: 'Delivery tracked successfully',
+            data: {
+                trackingId: delivery.trackingId,
+                status: delivery.status,
+                estimatedDuration: delivery.estimatedDuration,
+
+                // PIN — shown to farmer so they can share with customer
+                deliveryPIN: delivery.PIN,
+
+                driverDetails: delivery.driverId ? {
+                    name: `${delivery.driverId.firstName} ${delivery.driverId.lastName}`,
+                    phoneNumber: delivery.driverId.phoneNumber,
+                    vehicleType: delivery.vehhicleId?.vehicleType || null
+                } : null,
+
+                // customerName goes here when you add it to the model
+                customerDetails: {
+                    // customerName: delivery.customerName  ← add this when ready
+                    phoneNumber: delivery.customersPhoneNumber,
+                    otherNumber: delivery.CustomersOtherNumber
+                },
+
+                deliveryDetails: {
+                    produce: `${delivery.productType} - ${delivery.quantity}${delivery.weight}`,
+                    pickupLocation: delivery.AddressOrpickUpLocation,
+                    landmark: delivery.landMarkToAddressForPickup,
+                    destination: delivery.Destination,
+                    agreedFee: delivery.totalFare,
+                    escrowStatus
+                },
+
+                weatherAlert
+            }
+        })
+
+    } catch(error) {
+        console.log(error)
+        return next({ message: 'something went wrong', statusCode: 500 })
+    }
+}

@@ -187,6 +187,11 @@ exports.agentFarmerValidation = (req, res, next) => {
             "string.empty": "Town or Village cannot be empty",
             'string.pattern.base': "Town or Village cannot contain numbers and must be at least 4 characters",
         }), 
+        mainProduceType: joi.string().trim().pattern(/^[A-Za-z\s]{4,}$/).required().messages({
+            'any.required': "Town or Village is required",
+            "string.empty": "Town or Village cannot be empty",
+            'string.pattern.base': "Town or Village cannot contain numbers and must be at least 4 characters",
+        })
         
     })
 

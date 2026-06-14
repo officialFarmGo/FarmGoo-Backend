@@ -10,7 +10,7 @@ paths:
       parameters:
         - in: path
           name: vehhicleId
-      tags: [Create delivery for the farmer]
+      tags: [Create delivery for the agent]
       security: 
         - bearerAuth: []
       requestBody:
@@ -55,7 +55,7 @@ paths:
       parameters:
         - in: path
           name: deliveryId
-      tags: [Accept Agents delivery]
+      tags: [Accept Agents delivery by the driver]
       security: 
         - bearerAuth: []
       responses:
@@ -68,7 +68,7 @@ paths:
       parameters:
         - in: path
           name: deliveryId
-      tags: [Complete delivery]
+      tags: [Complete delivery for the agent by the driver]
       security: 
         - bearerAuth: []
       requestBody:
@@ -86,6 +86,41 @@ paths:
       responses:
         "201":
           description: Agents farmers delivery has been completed   
+  
+  /api/v1/agent/createAgentFarmer:
+    post:
+      summary: create the delivery for the agent's Farmer using the vehicle that the driver has listed
+      tags: [add new Farmer for Agent]
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - farmerFullName
+                - phoneNumber
+                - farmLocation
+                - mainProduceType
+              properties:
+                farmerFullName:
+                  type: string
+                  example: Ifeoma Kelechi
+                phoneNumber:
+                  type: string
+                  example: 08032401923
+                farmLocation:
+                  type: string
+                  example: Ikorodu lagos
+                mainProduceType:
+                  type: string
+                  example: tomatoes                        
+      responses:
+        "201":
+          description: Agents farmers delivery has been requested 
+
 
     
 
