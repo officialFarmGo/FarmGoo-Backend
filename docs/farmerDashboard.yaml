@@ -68,6 +68,37 @@
         "200":
           description: successfully gotten the drivers wallet overview
 
+/api/v1/driverDash/driverDashBoard:
+   get:
+      summary: this endpoint is to get the drivers dashBoard Overview
+      tags: [drivers dashBoard Overview]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten the drivers dashboard overview
+
+/api/v1/driverDash/driverDeliveries:
+   get:
+      summary: this endpoint is to view the drivers deliveries 
+      tags: [drivers deliveries view]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten the drivers deliveries 
+
+/api/v1/driverDash/getAvailableJobs:
+   get:
+      summary: this endpoint is to get the drivers available Jobs. Note only drivers that are not active can see available jobs
+      tags: [drivers available jobs ]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten the drivers available Jobs
+
+
 
 
   
