@@ -15,14 +15,20 @@ const agentFarmerSchema = new mongoose.Schema({
     phoneNumber: {
         type: String,
         trim: true,
-        required: true
+        required: true,
+        unique: true
     },
     farmLocation: {
         type: String,
         trim: true,
         required: true
+    },
+    mainProduceType:{
+        type: String,
+        trim: true,
+        required: true
     }
-})
+},{timestamps: true})
 
 const agentFarmerModel = mongoose.model('agentFarmer', agentFarmerSchema)
 
