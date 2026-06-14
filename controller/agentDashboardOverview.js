@@ -253,4 +253,144 @@ exports.getAgentWallet = async(req, res, next) => {
 
 
 
-//adding somethings
+//track Delivery
+exports.getSingleAgentDelivery = async (req, res, next) => {
+    try {
+        const agentId = req.user.id
+        const { deliveryId } = req.params
+
+        const delivery = await agentDeliveryModel.findOne({
+            _id: deliveryId,
+            agentId
+        })
+        .populate('agentFarmerId', 'farmerFullName phoneNumber farmLocation')
+        .populate('driverId', 'firstName lastName phoneNumber')
+        .populate('vehicleType', 'vehicleType')
+
+        if (!delivery) {
+            return next({ message: 'Delivery not found', statusCode: 404 })
+        }
+
+        // only show PIN if delivery is active
+        const showPin = ['Accepted', 'In Transit'].includes(delivery.status)
+
+        res.status(200).json({
+            message: 'Delivery fetched successfully',
+            data: {
+                trackingId: delivery.trackingId,
+                status: delivery.status,
+                estimatedDuration: delivery.estimatedDuration,
+               
+                paymentStatus: delivery.status === 'Delivered' 
+                    ? 'Released' 
+                    : 'Payment Secured with Escrow',
+                driver: delivery.driverId ? {
+                    name: `${delivery.driverId.firstName} ${delivery.driverId.lastName}`,
+                    phone: delivery.driverId.phoneNumber,
+                    vehicleType: delivery.vehicleType?.vehicleType
+                } : null,
+                customer: {
+                    // customersName: delivery.customersName ← add when ready
+                    details: delivery.customersDetails
+                },
+                pin: showPin ? delivery.PIN : null,
+                deliveryDetails: {
+                    produce: delivery.produceType,
+                    quantity: delivery.quantity,
+                    pickupLocation: delivery.pickupLocation,
+                    destination: delivery.Destination,
+                    agreedFee: `₦${delivery.totalFare?.toLocaleString()}`,
+                    farmer: delivery.agentFarmerId?.farmerFullName
+                }
+            }
+        })
+
+    } catch (error) {
+        console.log(error)
+        return next({ message: 'something went wrong', statusCode: 500 })
+    }
+}
+
+// ============================================
+// GET ALL AGENT DELIVERIES (Active Deliveries screen)
+// ============================================
+exports.getAllAgentDeliveries = async (req, res, next) => {
+    try {
+        const agentId = req.user.id
+
+        const [
+            totalActive,
+            inTransit,
+            completed,
+            pending,
+            deliveries
+        ] = await Promise.all([
+            // total active (not delivered)
+            agentDeliveryModel.countDocuments({
+                agentId,
+                status: { $in: ['Pending', 'Accepted', 'In Transit'] }
+            }),
+
+            // in transit count
+            agentDeliveryModel.countDocuments({
+                agentId,
+                status: 'In Transit'
+            }),
+
+            // completed count
+            agentDeliveryModel.countDocuments({
+                agentId,
+                status: 'Delivered'
+            }),
+
+            // pending count
+            agentDeliveryModel.countDocuments({
+                agentId,
+                status: 'Pending'
+            }),
+
+            // all deliveries
+            agentDeliveryModel.find({ agentId })
+                .populate('agentFarmerId', 'farmerFullName')
+                .populate('driverId', 'firstName lastName')
+                .populate('vehicleType', 'vehicleType')
+                .sort({ createdAt: -1 })
+        ])
+
+        const formattedDeliveries = deliveries.map(d => ({
+            _id: d._id,
+            trackingId: d.trackingId,
+            status: d.status,
+            produceType: d.produceType,
+            quantity: d.quantity,
+            pickupLocation: d.pickupLocation,
+            destination: d.Destination,
+            estimatedDuration: d.estimatedDuration,
+            totalFare: `₦${d.totalFare?.toLocaleString()}`,
+            farmer: d.agentFarmerId?.farmerFullName || 'Unknown',
+            driver: d.driverId 
+                ? `${d.driverId.firstName} ${d.driverId.lastName}`
+                : 'Not assigned',
+            paymentStatus: d.status === 'Delivered'
+                ? 'Released'
+                : 'Payment Secured with Escrow'
+        }))
+
+        res.status(200).json({
+            message: 'Deliveries fetched successfully',
+            data: {
+                stats: {
+                    totalActive,
+                    inTransit,
+                    completed,
+                    pending
+                },
+                deliveries: formattedDeliveries
+            }
+        })
+
+    } catch (error) {
+        console.log(error)
+        return next({ message: 'something went wrong', statusCode: 500 })
+    }
+}

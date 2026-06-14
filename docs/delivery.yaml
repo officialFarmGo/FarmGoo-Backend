@@ -75,7 +75,7 @@ paths:
       security: 
         - bearerAuth: []
       responses:
-        "201":
+        "200":
           description: farmers delivery has been accepted by a driver.
 
   /api/v1/delivery/completeDelivery/{deliveryId}:
@@ -100,7 +100,7 @@ paths:
                   type: string
                   example: 1234              
       responses:
-        "201":
+        "200":
           description: delivery has been completed   
 
     
