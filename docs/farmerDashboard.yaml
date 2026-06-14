@@ -98,7 +98,15 @@
         "200":
           description: successfully gotten the drivers available Jobs
 
-
-
-
-  
+/api/v1/driverDash/getTheJobDetails/{deliveryId}:
+   get:
+      summary: this endpoint is to get a single availble jobs details for the drivers. Note only drivers that are active can see available jobs, and this is to allow you to click on the available job and see further information before accepting
+      parameters:
+        - in: path
+          name: deliveryId
+      tags: [drivers ONE job details]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten one available job info
