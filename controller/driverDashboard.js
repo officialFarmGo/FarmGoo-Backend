@@ -20,32 +20,7 @@ const bankModel = require('../model/bankModel')
 
 
 
-// exports.driversDashBoardOverview = async(req, res, next) =>{
-//     try{
 
-//         const driverId = req.user.id
-
-//         const driver = await driverModel.findById(driverId)
-//         if(!driver){
-//             return next({
-//                 message: 'driver not found',
-//                 statusCode: 404
-//             })
-//         }
-
-//       const [completedJobsCount, activeDeliveriesCount, todaysEarningsCount, pendingEscrowCount, ] = await Promise.all({
-
-//         })
-
-//     }
-//     catch(error){
-//         return next({
-//             message: 'something went wrong',
-//             statusCode: 404
-//         })
-
-//     }
-// }
 
 exports.driverDashboard = async(req, res, next) => {
     try {
@@ -95,14 +70,12 @@ exports.driverDashboard = async(req, res, next) => {
         }
     ]),
 
-    // 3. completed this week ✅ fixed query
     deliveryModel.countDocuments({
         driverId,
         status: 'Delivered',
         updatedAt: { $gte: startOfWeek }
     }),
 
-    // 4. active deliveries list ✅
     deliveryModel.find({
         driverId,
         status: { $in: ['Accepted', 'In Transit'] }
@@ -110,10 +83,8 @@ exports.driverDashboard = async(req, res, next) => {
     .select('productType weight quantity totalFare trackingId status AddressOrpickUpLocation Destination estimatedDuration')
     .sort({ createdAt: -1 }),
 
-    // 5. driver wallet ✅
     driverWalletModel.findOne({ driver: driverId }),
 
-    // 6. driver kyc ✅
     driverKycModel.findOne({ driver: driverId })
         .populate('vehicleType', 'vehicleType')
 ])
@@ -505,7 +476,7 @@ exports.getJobDetail = async (req, res, next) => {
 
     if (!delivery) {
       return next({
-        message: 'Job not found, no longer available, or does not match your vehicle type',
+        message: 'Job not available',
         statusCode: 404
       })
     }
@@ -533,17 +504,7 @@ exports.getJobDetail = async (req, res, next) => {
       status: 'Delivered'
     })
 
-    // Weather at pickup location
-    const weatherResult = await getWeatherAlert(delivery.AddressOrpickUpLocation)
-    const weatherForecast = weatherResult?.hasAlert !== false
-      ? {
-          type: weatherResult.type,
-          title: weatherResult.title,
-          message: weatherResult.message,
-          temperature: weatherResult.temperature,
-          description: weatherResult.description
-        }
-      : { type: 'neutral', title: 'Weather Update', message: 'Weather data unavailable', temperature: null, description: 'N/A' }
+    
 
     // Pickup date & time formatted
     const pickupDate = delivery.pickupSchedule?.date
@@ -583,12 +544,9 @@ exports.getJobDetail = async (req, res, next) => {
 
         // Delivery details
         deliveryDetails: {
-          pickupDate,
-          pickupTime,
           vehicleTypeRequired: delivery.vehhicleId?.vehicleType || 'N/A',
           cargoWeight: `${delivery.quantity}${delivery.weight}`,
           riskLevel: 'Low',           // hardcoded as agreed
-          weatherForecast,
         },
 
         // Farmer info

@@ -13,7 +13,7 @@ router.get('/driverDeliveries', authenticate, getDriverDeliveries)
 
 router.get('/getAvailableJobs', authenticate, getAvailableJobs)
 
-router.get('/available-jobs/:deliveryId', authenticate, getJobDetail)
+router.get('/getTheJobDetails/:deliveryId', authenticate, getJobDetail)
 
 
 
