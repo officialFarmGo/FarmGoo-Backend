@@ -80,7 +80,7 @@ paths:
 
   /api/v1/delivery/completeDelivery/{deliveryId}:
     post:
-      summary: create the delivery for the farmer using the vehicle that the driver has listed
+      summary: complete the delivery with the deliveryId in the params and the driver logs in inputting the PIN
       parameters:
         - in: path
           name: deliveryId
