@@ -182,15 +182,13 @@ exports.agentFarmerValidation = (req, res, next) => {
             'string.empty': 'phone Number cannot be empty',
             'string.pattern.base': 'phone number must contain 11 digits'
         }),
-        farmLocation: joi.string().trim().pattern(/^[A-Za-z\s]{4,}$/).required().messages({
+        farmLocation: joi.string().trim().required().messages({
             'any.required': "Town or Village is required",
             "string.empty": "Town or Village cannot be empty",
-            'string.pattern.base': "Town or Village cannot contain numbers and must be at least 4 characters",
         }), 
-        mainProduceType: joi.string().trim().pattern(/^[A-Za-z\s]{4,}$/).required().messages({
+        mainProduceType: joi.string().trim().required().messages({
             'any.required': "Town or Village is required",
-            "string.empty": "Town or Village cannot be empty",
-            'string.pattern.base': "Town or Village cannot contain numbers and must be at least 4 characters",
+            "string.empty": "Town or Village cannot be empty"
         })
         
     })

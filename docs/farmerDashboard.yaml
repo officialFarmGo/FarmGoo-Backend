@@ -11,7 +11,7 @@
 /api/v1/farmerDash/activeDeliveries:
    get:
       summary: this endpoint is to get the farmers active deliveries Overview
-      tags: [farmers active Overview]
+      tags: [farmers active Deliveries Overview]
       security:
         - bearerAuth: []
       responses:
@@ -51,7 +51,7 @@
 /api/v1/agentDashboard/agentWallet:
    get:
       summary: this endpoint is to get the agents wallet Overview
-      tags: [farmers wallet Overview]
+      tags: [Agents wallet Overview]
       security:
         - bearerAuth: []
       responses:

@@ -19,6 +19,7 @@ const driverKycModel = require('../model/driverKyc')
 const bankModel = require('../model/bankModel')
 
 
+
 // exports.driversDashBoardOverview = async(req, res, next) =>{
 //     try{
 
@@ -469,3 +470,142 @@ exports.getAvailableJobs = async (req, res, next) => {
     return next({ message: "Something went wrong", statusCode: 500 });
   }
 };
+
+
+
+/**
+ * GET /driver/available-jobs/:deliveryId
+ *
+ * Returns full detail for a single pending delivery — shown when a driver
+ * taps a job card on the Available Jobs list.
+ */
+exports.getJobDetail = async (req, res, next) => {
+  try {
+    const driverId = req.user.id
+    const { deliveryId } = req.params
+
+    // Verify driver exists and has KYC
+    const driverKyc = await driverKycModel.findOne({ driver: driverId })
+      .populate('vehicleType', 'vehicleType')
+    if (!driverKyc) {
+      return next({ message: 'Complete your KYC to view job details', statusCode: 403 })
+    }
+
+    // Fetch the delivery — must still be Pending and unclaimed
+    const delivery = await deliveryModel
+      .findOne({
+        _id: deliveryId,
+        status: 'Pending',
+        driverId: { $exists: false },
+        vehhicleId: driverKyc.vehicleType._id  // must match driver's vehicle
+      })
+      .populate('farmerId', 'firstName lastName email phoneNumber createdAt kycVerified')
+      .populate('vehhicleId', 'vehicleType')
+      .lean()
+
+    if (!delivery) {
+      return next({
+        message: 'Job not found, no longer available, or does not match your vehicle type',
+        statusCode: 404
+      })
+    }
+
+    // How long ago was this posted
+    const postedAgo = (() => {
+      const diffMs = Date.now() - new Date(delivery.createdAt).getTime()
+      const diffMins = Math.floor(diffMs / 60000)
+      if (diffMins < 60) return `Posted ${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`
+      const diffHours = Math.floor(diffMins / 60)
+      if (diffHours < 24) return `Posted ${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
+      const diffDays = Math.floor(diffHours / 24)
+      return `Posted ${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
+    })()
+
+    // Farmer member since — formatted as "Jan 2025"
+    const memberSince = new Date(delivery.farmerId.createdAt).toLocaleDateString('en-NG', {
+      month: 'short',
+      year: 'numeric'
+    })
+
+    // Total deliveries this farmer has ever made
+    const farmerTotalDeliveries = await deliveryModel.countDocuments({
+      farmerId: delivery.farmerId._id,
+      status: 'Delivered'
+    })
+
+    // Weather at pickup location
+    const weatherResult = await getWeatherAlert(delivery.AddressOrpickUpLocation)
+    const weatherForecast = weatherResult?.hasAlert !== false
+      ? {
+          type: weatherResult.type,
+          title: weatherResult.title,
+          message: weatherResult.message,
+          temperature: weatherResult.temperature,
+          description: weatherResult.description
+        }
+      : { type: 'neutral', title: 'Weather Update', message: 'Weather data unavailable', temperature: null, description: 'N/A' }
+
+    // Pickup date & time formatted
+    const pickupDate = delivery.pickupSchedule?.date
+      ? new Date(delivery.pickupSchedule.date).toLocaleDateString('en-NG', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        })
+      : null
+    const pickupTime = delivery.pickupSchedule?.time || null
+
+    return res.status(200).json({
+      message: 'Job detail fetched successfully',
+      data: {
+        deliveryId: delivery._id,
+        trackingId: delivery.trackingId,
+
+        // Header
+        productType: delivery.productType,
+        quantity: delivery.quantity,
+        weight: delivery.weight,
+        estimatedPayout: `₦${delivery.totalFare?.toLocaleString()}`,
+        estimatedPayoutRaw: delivery.totalFare,
+        escrowNote: `The farmer has deposited ₦${delivery.totalFare?.toLocaleString()} into escrow. Payment will be automatically released to your wallet upon successful delivery confirmation.`,
+
+        // Route
+        route: {
+          pickup: {
+            address: delivery.AddressOrpickUpLocation,
+            landmark: delivery.landMarkToAddressForPickup || null,
+          },
+          destination: {
+            address: delivery.Destination,
+          },
+          estimatedDuration: delivery.estimatedDuration || 'N/A',
+        },
+
+        // Delivery details
+        deliveryDetails: {
+          pickupDate,
+          pickupTime,
+          vehicleTypeRequired: delivery.vehhicleId?.vehicleType || 'N/A',
+          cargoWeight: `${delivery.quantity}${delivery.weight}`,
+          riskLevel: 'Low',           // hardcoded as agreed
+          weatherForecast,
+        },
+
+        // Farmer info
+        farmer: {
+          name: `${delivery.farmerId.firstName} ${delivery.farmerId.lastName}`,
+          phone: delivery.farmerId.phoneNumber,
+          isVerified: delivery.farmerId.kycVerified,
+          totalDeliveries: farmerTotalDeliveries,
+          memberSince,
+        },
+
+        postedAgo,
+      }
+    })
+
+  } catch (error) {
+    console.log(error)
+    return next({ message: 'Something went wrong', statusCode: 500 })
+  }
+}
