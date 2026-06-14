@@ -46,7 +46,7 @@ paths:
                   type: string
                   example: 08034201969           
       responses:
-        "201":
+        "200":
           description: Agents farmers delivery has been requested 
 
   /api/v1/agentDelivery/acceptDelivery/{deliveryId}:
@@ -59,7 +59,7 @@ paths:
       security: 
         - bearerAuth: []
       responses:
-        "201":
+        "200":
           description: Agents farmers delivery has been accepted by a driver.
 
   /api/v1/agentDelivery/completeDelivery/{deliveryId}:
@@ -84,7 +84,7 @@ paths:
                   type: string
                   example: 1234              
       responses:
-        "201":
+        "200":
           description: Agents farmers delivery has been completed   
   
   /api/v1/agent/createAgentFarmer:
@@ -118,7 +118,7 @@ paths:
                   type: string
                   example: tomatoes                        
       responses:
-        "201":
+        "200":
           description: Agents farmers delivery has been requested 
 
 
