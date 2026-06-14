@@ -196,14 +196,7 @@ exports.getDriverWallet = async(req, res, next) => {
 
 
 
-/**
- * GET /driver/deliveries
- *
- * Returns:
- *  - stats: { active, completed, avgETA }
- *  - activeDeliveries[]   (status: Accepted | In Transit)
- *  - completedDeliveries[] (status: Delivered)
- */
+
 exports.getDriverDeliveries = async (req, res, next) => {
   try {
     const driverId = req.user.id;
@@ -232,11 +225,7 @@ exports.getDriverDeliveries = async (req, res, next) => {
         status: "Delivered",
       }),
 
-      // 3. Average ETA — aggregate estimatedDuration of active deliveries.
-      //    estimatedDuration is stored as a Google Maps duration string e.g. "2 hours 30 mins".
-      //    We parse the string into minutes inside the aggregation using $regexFind workaround,
-      //    but since MongoDB can't regex-parse numbers natively we do it in JS after fetching
-      //    the raw durations (see below — this aggregate just pulls the values).
+      
       deliveryModel
         .find(
           { driverId, status: { $in: ["Accepted", "In Transit"] } },
@@ -244,7 +233,6 @@ exports.getDriverDeliveries = async (req, res, next) => {
         )
         .lean(),
 
-      // 4. Active deliveries list
       deliveryModel
         .find({
           driverId,
@@ -259,7 +247,6 @@ exports.getDriverDeliveries = async (req, res, next) => {
         .sort({ createdAt: -1 })
         .lean(),
 
-      // 5. Completed deliveries list
       deliveryModel
         .find({
           driverId,
@@ -276,8 +263,7 @@ exports.getDriverDeliveries = async (req, res, next) => {
         .lean(),
     ]);
 
-    // --- Compute average ETA from duration strings ---
-    // Google Maps returns strings like "1 hour", "2 hours", "45 mins", "1 hour 30 mins"
+    
     const parseDurationToMinutes = (str = "") => {
       let minutes = 0;
       const hourMatch = str.match(/(\d+)\s*hour/);
@@ -298,9 +284,7 @@ exports.getDriverDeliveries = async (req, res, next) => {
       avgETA = `~${avgHours % 1 === 0 ? avgHours : avgHours.toFixed(1)}h`;
     }
 
-    // --- Format completed deliveries to match Figma card design ---
-    // Card shows: product, badges (Delivered + Payment Released), quantity + trackingId,
-    // pickup → destination, farmer name, completed timestamp, earned amount
+
     const formatCompletedAt = (date) => {
       const now = new Date();
       const d = new Date(date);
@@ -324,8 +308,8 @@ exports.getDriverDeliveries = async (req, res, next) => {
       productType: d.productType,
       quantity: d.quantity,
       weight: d.weight,
-      status: d.status,                    // "Delivered"
-      paymentStatus: "Payment Released",   // all Delivered docs have payment released
+      status: d.status,                   
+      paymentStatus: "Payment Released",   
       pickup: d.AddressOrpickUpLocation,
       destination: d.Destination,
       farmer: d.farmerId
@@ -367,7 +351,6 @@ exports.getAvailableJobs = async (req, res, next) => {
       return next({ message: "Driver not found", statusCode: 404 });
     }
 
-    // Gate: check if the driver is currently occupied
     const activeDeliveryCount = await deliveryModel.countDocuments({
       driverId,
       status: { $in: ["Accepted", "In Transit"] },
@@ -385,11 +368,10 @@ exports.getAvailableJobs = async (req, res, next) => {
       });
     }
 
-    // Driver is free — fetch all unclaimed pending deliveries
     const jobs = await deliveryModel
       .find({
         status: "Pending",
-        driverId: { $exists: false }, // no driver has accepted yet
+        driverId: { $exists: false }, 
       })
       .select(
         "trackingId productType quantity weight " +
@@ -402,7 +384,6 @@ exports.getAvailableJobs = async (req, res, next) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Shape each job for the frontend card
     const shapedJobs = jobs.map((job) => ({
       deliveryId: job._id,
       trackingId: job.trackingId,
@@ -444,31 +425,24 @@ exports.getAvailableJobs = async (req, res, next) => {
 
 
 
-/**
- * GET /driver/available-jobs/:deliveryId
- *
- * Returns full detail for a single pending delivery — shown when a driver
- * taps a job card on the Available Jobs list.
- */
+
 exports.getJobDetail = async (req, res, next) => {
   try {
     const driverId = req.user.id
     const { deliveryId } = req.params
 
-    // Verify driver exists and has KYC
     const driverKyc = await driverKycModel.findOne({ driver: driverId })
       .populate('vehicleType', 'vehicleType')
     if (!driverKyc) {
       return next({ message: 'Complete your KYC to view job details', statusCode: 403 })
     }
 
-    // Fetch the delivery — must still be Pending and unclaimed
     const delivery = await deliveryModel
       .findOne({
         _id: deliveryId,
         status: 'Pending',
         driverId: { $exists: false },
-        vehhicleId: driverKyc.vehicleType._id  // must match driver's vehicle
+        vehhicleId: driverKyc.vehicleType._id  
       })
       .populate('farmerId', 'firstName lastName email phoneNumber createdAt kycVerified')
       .populate('vehhicleId', 'vehicleType')
@@ -481,7 +455,6 @@ exports.getJobDetail = async (req, res, next) => {
       })
     }
 
-    // How long ago was this posted
     const postedAgo = (() => {
       const diffMs = Date.now() - new Date(delivery.createdAt).getTime()
       const diffMins = Math.floor(diffMs / 60000)
@@ -492,13 +465,11 @@ exports.getJobDetail = async (req, res, next) => {
       return `Posted ${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
     })()
 
-    // Farmer member since — formatted as "Jan 2025"
     const memberSince = new Date(delivery.farmerId.createdAt).toLocaleDateString('en-NG', {
       month: 'short',
       year: 'numeric'
     })
 
-    // Total deliveries this farmer has ever made
     const farmerTotalDeliveries = await deliveryModel.countDocuments({
       farmerId: delivery.farmerId._id,
       status: 'Delivered'
@@ -506,7 +477,6 @@ exports.getJobDetail = async (req, res, next) => {
 
     
 
-    // Pickup date & time formatted
     const pickupDate = delivery.pickupSchedule?.date
       ? new Date(delivery.pickupSchedule.date).toLocaleDateString('en-NG', {
           month: 'long',
@@ -522,7 +492,6 @@ exports.getJobDetail = async (req, res, next) => {
         deliveryId: delivery._id,
         trackingId: delivery.trackingId,
 
-        // Header
         productType: delivery.productType,
         quantity: delivery.quantity,
         weight: delivery.weight,
@@ -530,7 +499,6 @@ exports.getJobDetail = async (req, res, next) => {
         estimatedPayoutRaw: delivery.totalFare,
         escrowNote: `The farmer has deposited ₦${delivery.totalFare?.toLocaleString()} into escrow. Payment will be automatically released to your wallet upon successful delivery confirmation.`,
 
-        // Route
         route: {
           pickup: {
             address: delivery.AddressOrpickUpLocation,
@@ -542,14 +510,12 @@ exports.getJobDetail = async (req, res, next) => {
           estimatedDuration: delivery.estimatedDuration || 'N/A',
         },
 
-        // Delivery details
         deliveryDetails: {
           vehicleTypeRequired: delivery.vehhicleId?.vehicleType || 'N/A',
           cargoWeight: `${delivery.quantity}${delivery.weight}`,
           riskLevel: 'Low',           // hardcoded as agreed
         },
 
-        // Farmer info
         farmer: {
           name: `${delivery.farmerId.firstName} ${delivery.farmerId.lastName}`,
           phone: delivery.farmerId.phoneNumber,
