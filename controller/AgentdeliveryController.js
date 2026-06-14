@@ -12,6 +12,8 @@ const agentDeliveryModel = require('../model/agentDelivery')
 const { newDeliveryRequestTemplate } = require('../utils/bulkTemplate');
 const vehicleModel = require("../model/vehicleType");
 const driverWalletModel = require("../model/driverWallet");
+const notificationModel = require('../model/notification')
+
 
 
 
@@ -235,11 +237,25 @@ exports.agentDeliveryAccept = async (req, res, next) => {
             status: 'Pending'
         }], { session })
 
+         const driver = await driverModel.findById(driverId)
+            if (!driver) {
+            return next({ message: 'Driver not found', statusCode: 404 })
+        }
+
         await driverModel.findByIdAndUpdate(
             driverId,
             { isAvailable: false },
             { session }
         )
+
+         await new notificationModel({
+            owner: delivery.agentId,
+            ownerType: 'agents',
+            title: 'Job Accepted',
+            message: `Driver ${driver.firstName} ${driver.lastName} accepted your transport request`,
+            type: 'delivery'
+        }).save({ session })
+        
 
         await session.commitTransaction()
 
@@ -324,6 +340,25 @@ exports.agentCompleteDelivery = async (req, res, next) => {
             { isAvailable: true },
             { session }
         )
+
+        await new notificationModel({
+            owner: delivery.agentId,
+            ownerType: 'agents',
+            title: 'Delivery Completed',
+            message: `Your ${delivery.produceType} has been Delivered Successfully`,
+            type: 'delivery'
+            }).save({ session })
+        
+        
+        
+        await new notificationModel({
+            owner: delivery.driverId,
+            ownerType: 'drivers',
+            title: 'Delivery Completed',
+            message: `₦${delivery.totalFare.toLocaleString()} has been added to your wallet`,
+            type: 'delivery'
+            }).save({ session })
+        
 
         await session.commitTransaction()
 
