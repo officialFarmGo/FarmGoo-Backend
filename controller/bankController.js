@@ -6,6 +6,8 @@ const driverModel = require("../model/driver");
 
 const agentModel = require("../model/agent");
 
+const axios = require('axios')
+
 exports.addBank = async (req, res, next) => {
   try {
     const { bankName, AccountName, AccountNumber } = req.body;
@@ -49,3 +51,27 @@ exports.addBank = async (req, res, next) => {
     })
   }
 };
+
+
+exports.getBankList = async(req, res, next) => {
+    try {
+      console.log(process.env.koraSecretkey);
+        const response = await axios.get(
+            'https://api.korapay.com/merchant/api/v1/misc/banks?countryCode=NG',
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.KORA_API_KEY}`
+                }
+            }
+        )
+
+        res.status(200).json({
+            message: 'Banks fetched successfully',
+            data: response.data.data
+        })
+
+    } catch(error) {
+      console.log(error.message)
+        return next({ message: 'something went wrong', statusCode: 500 })
+    }
+}

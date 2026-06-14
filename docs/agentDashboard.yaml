@@ -11,7 +11,7 @@
 /api/v1/agentDashboard/agentsFarmersOverview:
    get:
       summary: this endpoint is to get the agents farmers Overview
-      tags: [farmers active Overview]
+      tags: [The Agents onboarded farmers Overview]
       security:
         - bearerAuth: []
       responses:

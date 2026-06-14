@@ -17,4 +17,14 @@
       responses:
         "200":
           description: successfully gotten the farmers active deliveries
+
+/api/v1/farmerDash/farmerWallet:
+   get:
+      summary: this endpoint is to get the farmers wallet Overview
+      tags: [farmers wallet Overview]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten the farmers wallet overview
   
