@@ -27,6 +27,10 @@ const bankSchema = new mongoose.Schema({
     AccountNumber: {
         type: String,
         required: true
+    },
+    isPrimary:{
+        type: Boolean,
+        default: true
     }
 
 })

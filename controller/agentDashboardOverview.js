@@ -3,6 +3,8 @@ const agentModel = require('../model/agent')
 const agentDeliveryModel = require('../model/agentDelivery')
 const agentTransModel = require('../model/agentTransaction')
 const mongoose = require('mongoose')
+const agentWalletModel = require('../model/agentWallet')
+const bankModel = require('../model/bankModel')
 
 exports.agentDashboardOverview = async(req, res, next) => {
     try {
@@ -199,3 +201,55 @@ exports.myFarmersOverview = async(req, res, next) => {
         return next({ message: 'something went wrong', statusCode: 500 })
     }
 }
+
+
+
+exports.getAgentWallet = async(req, res, next) => {
+    try {
+        const agentId = req.user.id
+
+        const [wallet, linkedAccounts, transactions] = await Promise.all([
+
+            // wallet balance
+            agentWalletModel.findOne({ agent: agentId }),
+
+            // linked bank accounts
+            bankModel.find({ agent: agentId }),
+
+            // transaction history
+            agentTransModel.find({ agent: agentId })
+                .sort({ createdAt: -1 })
+                .select('amount type status createdAt description')
+                .limit(5)
+        ])
+
+        if(!wallet) {
+            return next({ message: 'Wallet not found', statusCode: 404 })
+        }
+
+        // mask account number - show only last 4 digits
+        const maskedAccounts = linkedAccounts.map(account => ({
+                    _id: account._id,
+                    bankName: account.bankName,
+                    accountNumber: `****${account.AccountNumber.slice(-4)}`,
+                    accountName: account.AccountName,
+                    isPrimary: account.isPrimary
+}))
+        res.status(200).json({
+            message: 'Wallet fetched successfully',
+            data: {
+                availableBalance: wallet.availableBalance,
+                escrowBalance: wallet.escrowBalance,
+                linkedAccounts: maskedAccounts,
+                transactions
+            }
+        })
+
+    } catch(error) {
+        console.log(error)
+        return next({ message: 'something went wrong', statusCode: 500 })
+    }
+}
+
+
+
