@@ -36,6 +36,8 @@ const driverDashBoard = require('./router/driverDashboard')
 
 const agentDashboardRouter = require('./router/agentDashboardRouter')
 
+const notificationsRouter = require('./router/notificationsRouter')
+
 
 
 
@@ -74,6 +76,10 @@ app.use('/api/v1/farmerDash', farmerDashBoard)
 app.use('/api/v1/driverDash', driverDashBoard )
 
 app.use('/api/v1/agentDashboard', agentDashboardRouter)
+
+app.use('/api/v1/notifications', notificationsRouter)
+
+
 
 
 

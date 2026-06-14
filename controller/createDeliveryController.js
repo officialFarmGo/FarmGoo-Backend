@@ -12,6 +12,7 @@ const brevoBulk = require('../utils/brevoBulk')
 const { newDeliveryRequestTemplate } = require('../utils/bulkTemplate');
 const farmWalletModel = require("../model/farmerWallet");
 const otpGenerator = require('otp-generator')
+const notificationModel = require('../model/notification')
 
 
 const getDistance = async (origin, destination) => {
@@ -243,16 +244,31 @@ exports.acceptDelivery = async(req, res, next) =>{
         status: 'Pending Release'
     }], {session})
 
+    const driver = await driverModel.findById(driverId)
+    if (!driver) {
+    return next({ message: 'Driver not found', statusCode: 404 })
+}
+
     await driverModel.findByIdAndUpdate(driverId,
         {
             isAvailable: false
         },
         {session})
 
+        await new notificationModel({
+    owner: delivery.farmerId,
+    ownerType: 'farmers',
+    title: 'Job Accepted',
+    message: `Driver ${driver.firstName} ${driver.lastName} accepted your transport request`,
+    type: 'delivery'
+}).save({ session })
+
+
     await session.commitTransaction()
 
     const deliveryWithoutPin = await deliveryModel.findById(deliveryId).select('-PIN')
 
+    
 
     res.status(200).json({
         message: 'Delivery Accepted Successfully',
@@ -360,7 +376,27 @@ exports.completeDelivery = async(req, res, next) =>{
         { session }
         )
 
-        await session.commitTransaction()
+   
+await new notificationModel({
+    owner: deliveries.farmerId,
+    ownerType: 'farmers',
+    title: 'Delivery Completed',
+    message: `Your ${deliveries.productType} has been Delivered Successfully`,
+    type: 'delivery'
+    }).save({ session })
+
+
+
+await new notificationModel({
+    owner: deliveries.driverId,
+    ownerType: 'drivers',
+    title: 'Delivery Completed',
+    message: `₦${deliveries.totalFare.toLocaleString()} has been added to your wallet`,
+    type: 'delivery'
+    }).save({ session })
+
+
+     await session.commitTransaction()
 
         res.status(200).json({
             message: 'delivery has been completed',
