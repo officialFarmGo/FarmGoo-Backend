@@ -16,6 +16,7 @@ const getWeatherAlert = require('../utils/weather')
 const marketTipsModel = require('../model/marketTips')
 const mongoose = require('mongoose')
 const driverKycModel = require('../model/driverKyc')
+const bankModel = require('../model/bankModel')
 
 
 // exports.driversDashBoardOverview = async(req, res, next) =>{
@@ -169,3 +170,56 @@ exports.driverDashboard = async(req, res, next) => {
         return next({ message: 'something went wrong', statusCode: 500 })
     }
 }
+
+
+
+
+
+exports.getDriverWallet = async(req, res, next) => {
+    try {
+        const driverId = req.user.id
+
+        const [wallet, linkedAccounts, transactions] = await Promise.all([
+
+            // wallet balance
+            driverWalletModel.findOne({ driver: driverId }),
+
+            // linked bank accounts
+            bankModel.find({ driver: driverId }),
+
+            // transaction history
+            driveTransModel.find({ driver: driverId })
+                .sort({ createdAt: -1 })
+                .select('amount type status createdAt description')
+                .limit(5)
+        ])
+
+        if(!wallet) {
+            return next({ message: 'Wallet not found', statusCode: 404 })
+        }
+
+        // mask account number - show only last 4 digits
+        const maskedAccounts = linkedAccounts.map(account => ({
+                    _id: account._id,
+                    bankName: account.bankName,
+                    accountNumber: `****${account.AccountNumber.slice(-4)}`,
+                    accountName: account.AccountName,
+                    isPrimary: account.isPrimary
+}))
+        res.status(200).json({
+            message: 'Wallet fetched successfully',
+            data: {
+                availableBalance: wallet.availableBalance,
+                linkedAccounts: maskedAccounts,
+                transactions
+            }
+        })
+
+    } catch(error) {
+        console.log(error)
+        return next({ message: 'something went wrong', statusCode: 500 })
+    }
+}
+
+
+

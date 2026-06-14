@@ -19,7 +19,6 @@ const driverWalletSchema = new mongoose.Schema({
         type: Number,
         default: 0 
     }
-    
 },{timestamps: true})
 
 const driverWalletModel = mongoose.model('driverWallets', driverWalletSchema)

@@ -19,7 +19,6 @@ const farmWalletSchema = new mongoose.Schema({
         type: Number,
         default: 0 
     }
-    
 },{timestamps: true})
 
 const farmWalletModel = mongoose.model('farmWallet', farmWalletSchema)
