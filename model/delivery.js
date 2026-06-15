@@ -62,18 +62,15 @@ const deliverySchema = new mongoose.Schema({
         trim: true,
         required: true
     },
-    trackingId: {
+    customersName: {
          type: String,
         trim: true,
         required: true
     },
-    pickupSchedule:{
-        date:{
-            type: Date
-        },
-        time: {
-            type: String
-        }
+    trackingId: {
+         type: String,
+        trim: true,
+        required: true
     },
     vehhicleId: { 
     type: mongoose.Schema.Types.ObjectId, 

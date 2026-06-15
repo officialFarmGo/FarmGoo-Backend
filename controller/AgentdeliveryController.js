@@ -13,8 +13,7 @@ const { newDeliveryRequestTemplate } = require('../utils/bulkTemplate');
 const vehicleModel = require("../model/vehicleType");
 const driverWalletModel = require("../model/driverWallet");
 const notificationModel = require('../model/notification')
-
-
+const driverKycModel = require('../model/driverKyc')   // ← added
 
 
 const getDistance = async (origin, destination) => {
@@ -31,8 +30,7 @@ const getDistance = async (origin, destination) => {
   );
 
   const data = response.data;
-    console.log('Google Maps response:', JSON.stringify(data))
-
+  console.log('Google Maps response:', JSON.stringify(data))
 
   if (data.status !== "OK") {
     throw new Error("Could not calculate distance");
@@ -62,7 +60,7 @@ const generateTrackingId = async () => {
         Math.floor(Math.random() * characters.length),
       );
     }
-const existing = await agentDeliveryModel.findOne({ trackingId })
+    const existing = await agentDeliveryModel.findOne({ trackingId })
     if (!existing) isUnique = true;
   }
 
@@ -76,11 +74,12 @@ exports.agentCreateDelivery = async (req, res, next) => {
 
         const {
             agentFarmerId,  
-           produceType,
+            produceType,
             quantity,
             pickupLocation,
             Destination,
-            customersDetails
+            customersDetails,
+            customersName
         } = req.body
 
         const agent = await agentModel.findById(agentId)
@@ -104,10 +103,7 @@ exports.agentCreateDelivery = async (req, res, next) => {
             return next({ message: 'Vehicle type not found', statusCode: 404 })
         }
 
-        const { distanceKm, duration } = await getDistance(
-            pickupLocation,
-            Destination
-        )
+        const { distanceKm, duration } = await getDistance(pickupLocation, Destination)
 
         const totalFare = Math.round(vehicle.baseFare + vehicle.ratePerKm * distanceKm)
         const commission = Math.round((10 / 100) * totalFare)
@@ -140,12 +136,18 @@ exports.agentCreateDelivery = async (req, res, next) => {
             pickupLocation,
             Destination,
             customersDetails,
+            customersName,
             vehicleType: vehicle._id,
             estimatedDuration: duration,
             requestedByType: 'agents'
         })
 
+        // CHANGE 1: Only broadcast to drivers whose KYC vehicle type matches
+        const matchingKycs = await driverKycModel.find({ vehicleType: vehicle._id })
+        const matchingDriverIds = matchingKycs.map(k => k.driver)
+
         const drivers = await driverModel.find({
+            _id: { $in: matchingDriverIds },
             kycVerified: true,
             isAvailable: true
         })
@@ -185,24 +187,41 @@ exports.agentDeliveryAccept = async (req, res, next) => {
         const driverId = req.user.id
         const { deliveryId } = req.params
 
+        // Fetch delivery first to check vehicle type before touching any data
+        const pendingDelivery = await agentDeliveryModel.findOne({
+            _id: deliveryId,
+            status: 'Pending'
+        })
+
+        if (!pendingDelivery) {
+            await session.abortTransaction()
+            return next({ message: 'Delivery not available or already accepted', statusCode: 404 })
+        }
+
+        // CHANGE 2: Guard — driver's KYC vehicle must match the requested vehicle
+        const driverKyc = await driverKycModel.findOne({ driver: driverId })
+        if (!driverKyc) {
+            await session.abortTransaction()
+            return next({ message: 'Complete your KYC before accepting deliveries', statusCode: 403 })
+        }
+
+        if (driverKyc.vehicleType.toString() !== pendingDelivery.vehicleType.toString()) {
+            await session.abortTransaction()
+            return next({
+                message: 'Your vehicle type does not match what was requested. You can only accept jobs that match your registered vehicle.',
+                statusCode: 403
+            })
+        }
+
         const delivery = await agentDeliveryModel.findOneAndUpdate(
-            {
-                _id: deliveryId,
-                status: 'Pending',
-            },
-            {
-                driverId,
-                status: 'Accepted'
-            },
+            { _id: deliveryId, status: 'Pending' },
+            { driverId, status: 'Accepted' },
             { new: true, session }
         )
 
         if (!delivery) {
             await session.abortTransaction()
-            return next({
-                message: 'Delivery not available or already accepted',
-                statusCode: 404
-            })
+            return next({ message: 'Delivery was already accepted by another driver', statusCode: 409 })
         }
 
         const agentWallet = await agentWalletModel.findOneAndUpdate(
@@ -212,8 +231,8 @@ exports.agentDeliveryAccept = async (req, res, next) => {
             },
             {
                 $inc: {
-                    availableBalance: -delivery.amount,  
-                    escrowBalance: +delivery.totalFare   
+                    availableBalance: -delivery.amount,
+                    escrowBalance: +delivery.totalFare
                 }
             },
             { new: true, session }
@@ -221,10 +240,7 @@ exports.agentDeliveryAccept = async (req, res, next) => {
 
         if (!agentWallet) {
             await session.abortTransaction()
-            return next({
-                message: 'Agent has insufficient balance',
-                statusCode: 400
-            })
+            return next({ message: 'Agent has insufficient balance', statusCode: 400 })
         }
 
         await agentTransModel.create([{
@@ -237,25 +253,21 @@ exports.agentDeliveryAccept = async (req, res, next) => {
             status: 'Pending'
         }], { session })
 
-         const driver = await driverModel.findById(driverId)
-            if (!driver) {
+        const driver = await driverModel.findById(driverId)
+        if (!driver) {
+            await session.abortTransaction()
             return next({ message: 'Driver not found', statusCode: 404 })
         }
 
-        await driverModel.findByIdAndUpdate(
-            driverId,
-            { isAvailable: false },
-            { session }
-        )
+        await driverModel.findByIdAndUpdate(driverId, { isAvailable: false }, { session })
 
-         await new notificationModel({
+        await new notificationModel({
             owner: delivery.agentId,
             ownerType: 'agents',
             title: 'Job Accepted',
             message: `Driver ${driver.firstName} ${driver.lastName} accepted your transport request`,
             type: 'delivery'
         }).save({ session })
-        
 
         await session.commitTransaction()
 
@@ -301,11 +313,7 @@ exports.agentCompleteDelivery = async (req, res, next) => {
             return next({ message: 'Invalid PIN', statusCode: 400 })
         }
 
-        await agentDeliveryModel.findByIdAndUpdate(
-            deliveryId,
-            { status: 'Delivered' },
-            { session }
-        )
+        await agentDeliveryModel.findByIdAndUpdate(deliveryId, { status: 'Delivered' }, { session })
 
         await agentWalletModel.findOneAndUpdate(
             { agent: delivery.agentId },
@@ -335,11 +343,7 @@ exports.agentCompleteDelivery = async (req, res, next) => {
             { session }
         )
 
-        await driverModel.findByIdAndUpdate(
-            driverId,
-            { isAvailable: true },
-            { session }
-        )
+        await driverModel.findByIdAndUpdate(driverId, { isAvailable: true }, { session })
 
         await new notificationModel({
             owner: delivery.agentId,
@@ -347,18 +351,15 @@ exports.agentCompleteDelivery = async (req, res, next) => {
             title: 'Delivery Completed',
             message: `Your ${delivery.produceType} has been Delivered Successfully`,
             type: 'delivery'
-            }).save({ session })
-        
-        
-        
+        }).save({ session })
+
         await new notificationModel({
             owner: delivery.driverId,
             ownerType: 'drivers',
             title: 'Delivery Completed',
             message: `₦${delivery.totalFare.toLocaleString()} has been added to your wallet`,
             type: 'delivery'
-            }).save({ session })
-        
+        }).save({ session })
 
         await session.commitTransaction()
 

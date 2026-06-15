@@ -36,14 +36,10 @@ exports.createDeliveryValidator = (req, res, next) => {
             'string.empty': 'Customer other number cannot be empty',
             'string.pattern.base': 'Customer other number must be 11 digits'
         }),
-        pickupSchedule: joi.object({
-            date: joi.date().messages({
-                'date.base': 'Pickup date must be a valid date'
-            }),
-            time: joi.string().messages({
-                'string.empty': 'Pickup time cannot be empty'
-            })
-        })
+        customersName: joi.string().required().messages({
+            'any.required': 'Customer Name is required',
+            'string.empty': 'Customer Name cannot be empty'
+        }),
     })
 
     const { error } = schema.validate(req.body)
