@@ -78,8 +78,7 @@ exports.agentCreateDelivery = async (req, res, next) => {
             quantity,
             pickupLocation,
             Destination,
-            customersDetails,
-            customersName
+            customersDetails
         } = req.body
 
         const agent = await agentModel.findById(agentId)
@@ -136,7 +135,6 @@ exports.agentCreateDelivery = async (req, res, next) => {
             pickupLocation,
             Destination,
             customersDetails,
-            customersName,
             vehicleType: vehicle._id,
             estimatedDuration: duration,
             requestedByType: 'agents'
@@ -377,5 +375,46 @@ exports.agentCompleteDelivery = async (req, res, next) => {
         return next({ message: 'something went wrong', statusCode: 500 })
     } finally {
         session.endSession()
+    }
+}
+
+
+
+ // this is to calculate the estimated price for the delivery
+exports.estimateDeliveryPrice = async (req, res, next) => {
+    try {
+        const { pickupLocation, Destination, vehicleType} = req.body
+
+        if (!pickupLocation || !Destination || !vehicleType) {
+            return next({
+                message: 'pickupLocation, Destination and vehhicleId are required',
+                statusCode: 400
+            })
+        }
+
+        const vehicle = await vehicleModel.findById(vehicleType)
+        if (!vehicle) {
+            return next({ message: 'Vehicle type not found', statusCode: 404 })
+        }
+
+        const { distanceKm, duration } = await getDistance(pickupLocation, Destination)
+
+        const totalFare = Math.round(vehicle.baseFare + vehicle.ratePerKm * distanceKm)
+        const commission = Math.round((10 / 100) * totalFare)
+        const amount = Math.round(totalFare + commission)
+
+        return res.status(200).json({
+            message: 'Price estimate calculated',
+            data: {
+                    deliveryFare: totalFare,
+                    serviceFee: commission,
+                    total: amount
+                
+            }
+        })
+
+    } catch (error) {
+        console.log(error)
+        return next({ message: error.message || 'something went wrong', statusCode: 500 })
     }
 }
