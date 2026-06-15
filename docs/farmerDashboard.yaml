@@ -40,7 +40,7 @@
 
 /api/v1/notifications/agentNotification:
    get:
-      summary: this endpoint is to get the farmers notification Overview
+      summary: this endpoint is to get the agents notification Overview
       tags: [agents Notifications Overview]
       security:
         - bearerAuth: []

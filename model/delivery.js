@@ -72,14 +72,6 @@ const deliverySchema = new mongoose.Schema({
         trim: true,
         required: true
     },
-    pickupSchedule:{
-        date:{
-            type: Date
-        },
-        time: {
-            type: String
-        }
-    },
     vehhicleId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'vehicletypes' 
