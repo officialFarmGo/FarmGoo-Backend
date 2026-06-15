@@ -40,3 +40,20 @@ exports.createAgentFarmer = async (req, res, next) => {
         return next({ message: 'something went wrong', statusCode: 500 })
     }
 }
+
+
+exports.getAllFarmersUnderAgent = async(req, res, next) => {
+    try{
+        const agentId = req.user.id
+
+        const getAllFarmers = await agentFarmerModel.find({agent: agentId}).select('farmerFullName phoneNumber farmLocation mainProduceType createdAt')
+
+        res.status(200).json({
+            message: 'successfully retrieved all farmers under agent',
+            data: getAllFarmers
+        })
+    }
+    catch(error){
+        return next({ message: 'something went wrong', statusCode: 500 })
+    }
+}

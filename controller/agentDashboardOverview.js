@@ -29,23 +29,19 @@ exports.agentDashboardOverview = async(req, res, next) => {
             recentRequests
         ] = await Promise.all([
 
-            // Farmers Managed
             agentFarmerModel.countDocuments({ agent: agentId }),
 
-            // In Progress deliveries
             agentDeliveryModel.countDocuments({
                 agentId,
                 status: { $in: ['Pending', 'Accepted', 'In Transit'] }
             }),
 
-            // Completed This Month
             agentDeliveryModel.countDocuments({
                 agentId,
                 status: 'Delivered',
                 updatedAt: { $gte: startOfMonth }
             }),
 
-            // Total Spent This Month
             agentTransModel.aggregate([
                 {
                     $match: {

@@ -5,7 +5,7 @@ const {createAgent, agentLogin, resendOtpforAgents, forgetPassword, resetPasswor
 
 const {signUpValidator, verifyOtpValidator, resetPasswordValidator, resendOTPValidator, agentFarmerValidation} = require('../middleWare/onBValidations')
 
-const {createAgentFarmer} = require('../controller/creatAgentFarmer')
+const {createAgentFarmer, getAllFarmersUnderAgent} = require('../controller/creatAgentFarmer')
 
 const {authenticate} = require('../middleWare/auth')
 
@@ -22,5 +22,9 @@ router.post('/reset-Password', resetPasswordValidator, resetPassword)
 router.post('/resendOtp', resendOTPValidator, resendOtpforAgents)
 
 router.post('/createAgentFarmer', authenticate, agentFarmerValidation, createAgentFarmer)
+
+router.get('/getFarmersUnderAgent', authenticate, getAllFarmersUnderAgent)
+
+
 
 module.exports = router;
