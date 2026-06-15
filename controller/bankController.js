@@ -75,3 +75,12 @@ exports.getBankList = async(req, res, next) => {
         return next({ message: 'something went wrong', statusCode: 500 })
     }
 }
+
+
+
+// exports.find = async(req, res, next) =>{
+//   try{
+
+//   }
+
+// }catch
