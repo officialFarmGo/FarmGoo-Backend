@@ -385,13 +385,6 @@ exports.estimateDeliveryPrice = async (req, res, next) => {
     try {
         const { pickupLocation, Destination, vehicleType} = req.body
 
-        if (!pickupLocation || !Destination || !vehicleType) {
-            return next({
-                message: 'pickupLocation, Destination and vehhicleId are required',
-                statusCode: 400
-            })
-        }
-
         const vehicle = await vehicleModel.findById(vehicleType)
         if (!vehicle) {
             return next({ message: 'Vehicle type not found', statusCode: 404 })

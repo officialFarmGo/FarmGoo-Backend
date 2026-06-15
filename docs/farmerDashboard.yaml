@@ -109,7 +109,7 @@
         - bearerAuth: []
       responses:
         "200":
-          description: successfully gotten one available job info
+          description: successfully gotten one available job info for drivers
 
 /api/v1/farmerDash/trackDelivery/{deliveryId}:
    get:
@@ -117,12 +117,12 @@
       parameters:
         - in: path
           name: deliveryId
-      tags: [farmers track one delivery, be it active, or pending]
+      tags: [farmers track one delivery be it active or pending]
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: successfully gotten one available job info
+          description: successfully gotten one available job info for the farmer
 
 /api/v1/agentDelivery/estimatePrice:
    post:
@@ -131,8 +131,23 @@
         - in: path
           name: deliveryId
       tags: [Agents estimated Price for delivery]
-      security:
-        - bearerAuth: []
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - pickupLocation
+                - Destination
+                - vehicleType
+              properties:
+                pickupLocation:
+                  type: string
+                  example: 23 Liverpool Road Apapa Lagos
+                Destination:
+                  type: string
+                  example: ikorodu Lagos                
       responses:
         "200":
-          description: successfully gotten one available job info
+          description: successfully gotten estimated price for delivery
