@@ -29,6 +29,7 @@ paths:
                 - customersPhoneNumber
                 - CustomersOtherNumber
                 - vehicleType
+                - customersName
               properties:
                 productType:
                   type: string
@@ -58,6 +59,9 @@ paths:
                 CustomersOtherNumber:
                   type: string
                   example: 08033858575
+                customersName:
+                  type: string
+                  example: Taiwo Kehinde
                 vehicleType:
                   type: string
                   example: 6a26be437850290aa292bb55                

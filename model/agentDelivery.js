@@ -45,6 +45,11 @@ const agentDeliverySchema = new mongoose.Schema({
         trim: true,
         required: true
     },
+    customersName: {
+         type: String,
+        trim: true,
+        required: true
+    },
     vehicleType: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'vehicletype',  

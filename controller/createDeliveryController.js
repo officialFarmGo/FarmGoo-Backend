@@ -82,6 +82,7 @@ exports.createDelivery = async (req, res, next) => {
       Destination,
       customersPhoneNumber,
       CustomersOtherNumber,
+      customersName,
       pickupSchedule,
     } = req.body;
 
@@ -144,6 +145,7 @@ exports.createDelivery = async (req, res, next) => {
       Destination,
       customersPhoneNumber,
       CustomersOtherNumber,
+      customersName,
       pickupSchedule,
       vehhicleId: vehicle._id,
       totalFare,

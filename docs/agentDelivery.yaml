@@ -26,6 +26,7 @@ paths:
                 - pickupLocation
                 - Destination
                 - customersDetails
+                - customersName
               properties:
                 agentFarmerId:
                   type: string
@@ -44,7 +45,10 @@ paths:
                   example: Mile 12 Market, Lagos
                 customersDetails:
                   type: string
-                  example: 08034201969           
+                  example: 08034201969
+                customersName:
+                  type: string
+                  example: Taiwo Kehinde           
       responses:
         "200":
           description: Agents farmers delivery has been requested 

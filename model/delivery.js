@@ -62,6 +62,11 @@ const deliverySchema = new mongoose.Schema({
         trim: true,
         required: true
     },
+    customersName: {
+         type: String,
+        trim: true,
+        required: true
+    },
     trackingId: {
          type: String,
         trim: true,
