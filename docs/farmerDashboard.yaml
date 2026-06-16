@@ -155,9 +155,6 @@
 /api/v1/farmerDash/getOneFarmer:
    get:
       summary: this endPoint is to get one Farmer
-      parameters:
-        - in: path
-          name: deliveryId
       tags: [Get one Farmer]
       security:
         - bearerAuth: []
