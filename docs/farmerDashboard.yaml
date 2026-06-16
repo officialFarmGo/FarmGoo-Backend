@@ -144,7 +144,10 @@
                   example: 23 Liverpool Road Apapa Lagos
                 Destination:
                   type: string
-                  example: ikorodu Lagos                
+                  example: ikorodu Lagos  
+                vehicleType:
+                  type: string
+                  example: 6a2dd9507901672d4346f51b              
       responses:
         "200":
           description: successfully gotten estimated price for delivery
