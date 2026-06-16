@@ -11,6 +11,10 @@ const agentModel = require('../model/agent')
 const farmWalletModel = require('../model/farmerWallet')
 const agentWalletModel = require('../model/agentWallet')
 const driverWalletModel = require('../model/driverWallet')
+const farmTransModel = require("../model/farmerTrans");
+const driveTransModel = require("../model/driverTransactionModel");
+const agentTransModel = require('../model/agentTransaction')
+const notificationModel = require('../model/notification')
 
 
 exports.initializePayment = async(req, res, next) =>{
