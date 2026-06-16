@@ -169,3 +169,13 @@
       responses:
         "200":
           description: successfully gotten all crops 
+
+/api/v1/driverDash/getOneDriver:
+   get:
+      summary: this endPoint is to get one driver
+      tags: [Driver]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten one Driver

@@ -533,3 +533,30 @@ exports.getJobDetail = async (req, res, next) => {
     return next({ message: 'Something went wrong', statusCode: 500 })
   }
 }
+
+
+exports.getOneDriver = async(req, res, next) => {
+    try{
+        const driverId = req.user.id
+
+    const driver = await driverModel.findById(driverId)
+        if(!driver){
+            return next({
+                message: 'driver not found',
+                statusCode: 404
+            })
+        }
+        res.status(200).json({
+            message: 'gotten one driver',
+            data: driver
+        })
+
+    }
+    catch(error){
+        console.log(error)
+            return next({
+                message: error.message,
+                statusCode: 500
+            })
+        }
+}
