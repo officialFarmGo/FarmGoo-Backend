@@ -120,7 +120,7 @@ exports.driverDashboard = async(req, res, next) => {
         res.status(200).json({
             message: 'Driver dashboard fetched successfully',
             data: {
-                greeting: `Good Morning, ${driver.firstName}!`,
+                greeting: `${driver.firstName} ${driver.lastName}`,
                 stats: {
                     availableJobs: availableJobsCount,
                     activeDeliveries: activeDeliveriesCount,
