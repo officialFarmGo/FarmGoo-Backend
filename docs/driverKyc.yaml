@@ -1,7 +1,7 @@
 /api/v1/driverKyc/createKyc/{driverid}:
     post:
       summary: this endpoint is to create a driver kyc
-      tags: [Driver KYC]
+      tags: [Driver]
       parameters:
         - in: path
           name: driverid

@@ -10,7 +10,7 @@ paths:
       parameters:
         - in: path
           name: farmId
-      tags: [create farmer KYC]
+      tags: [Farmer]
       requestBody:
         required: true
         content: 
@@ -46,7 +46,7 @@ paths:
   /api/v1/farmKyc/getKyc:
     get:
       summary: this endpoint is to get the farmers kyc
-      tags: [get a farmers kyc]
+      tags: [Farmer]
       security:
         - bearerAuth: []
       responses:

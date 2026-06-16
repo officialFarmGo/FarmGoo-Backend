@@ -1,7 +1,7 @@
 /api/v1/farmerDash/farmDash:
    get:
       summary: this endpoint is to get the farmers dashboard Overview
-      tags: [farmers DashBoard Overview]
+      tags: [Farmer]
       security:
         - bearerAuth: []
       responses:
@@ -11,7 +11,7 @@
 /api/v1/farmerDash/activeDeliveries:
    get:
       summary: this endpoint is to get the farmers active deliveries Overview
-      tags: [farmers active Deliveries Overview]
+      tags: [Farmer]
       security:
         - bearerAuth: []
       responses:
@@ -21,7 +21,7 @@
 /api/v1/farmerDash/farmerWallet:
    get:
       summary: this endpoint is to get the farmers wallet Overview
-      tags: [farmers wallet Overview]
+      tags: [Farmer]
       security:
         - bearerAuth: []
       responses:
@@ -31,7 +31,7 @@
 /api/v1/notifications/farmerNotification:
    get:
       summary: this endpoint is to get the farmers notification Overview
-      tags: [farmers Notifications Overview]
+      tags: [Farmer]
       security:
         - bearerAuth: []
       responses:
@@ -41,7 +41,7 @@
 /api/v1/notifications/agentNotification:
    get:
       summary: this endpoint is to get the agents notification Overview
-      tags: [agents Notifications Overview]
+      tags: [Agent]
       security:
         - bearerAuth: []
       responses:
@@ -51,7 +51,7 @@
 /api/v1/agentDashboard/agentWallet:
    get:
       summary: this endpoint is to get the agents wallet Overview
-      tags: [Agents wallet Overview]
+      tags: [Agent]
       security:
         - bearerAuth: []
       responses:
@@ -71,7 +71,7 @@
 /api/v1/driverDash/driverDashBoard:
    get:
       summary: this endpoint is to get the drivers dashBoard Overview
-      tags: [drivers dashBoard Overview]
+      tags: [Driver]
       security:
         - bearerAuth: []
       responses:
@@ -81,7 +81,7 @@
 /api/v1/driverDash/driverDeliveries:
    get:
       summary: this endpoint is to view the drivers deliveries 
-      tags: [drivers deliveries view]
+      tags: [Driver]
       security:
         - bearerAuth: []
       responses:
@@ -91,7 +91,7 @@
 /api/v1/driverDash/getAvailableJobs:
    get:
       summary: this endpoint is to get the drivers available Jobs. Note only drivers that are not active can see available jobs
-      tags: [drivers available jobs ]
+      tags: [Driver]
       security:
         - bearerAuth: []
       responses:
@@ -104,7 +104,7 @@
       parameters:
         - in: path
           name: deliveryId
-      tags: [drivers ONE job details]
+      tags: [Driver]
       security:
         - bearerAuth: []
       responses:
@@ -117,7 +117,7 @@
       parameters:
         - in: path
           name: deliveryId
-      tags: [farmers track one delivery be it active or pending]
+      tags: [Farmer]
       security:
         - bearerAuth: []
       responses:
@@ -127,7 +127,7 @@
 /api/v1/agentDelivery/estimatePrice:
    post:
       summary: This endpoint is to calculate the estimated delivery for the agent before creating the request
-      tags: [Agents estimated Price for delivery]
+      tags: [Agent]
       requestBody:
         required: true
         content: 
@@ -155,7 +155,7 @@
 /api/v1/farmerDash/getOneFarmer:
    get:
       summary: this endPoint is to get one Farmer
-      tags: [Get one Farmer]
+      tags: [Farmer]
       security:
         - bearerAuth: []
       responses:
