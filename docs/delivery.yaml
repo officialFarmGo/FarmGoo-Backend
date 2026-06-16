@@ -111,8 +111,6 @@ paths:
     post:
       summary: This endpoint is to calculate the estimated delivery for the farmer before creating the request
       tags: [Farmers Estimated Price for delivery]
-      security: 
-        - bearerAuth: []
       requestBody:
         required: true
         content: 
