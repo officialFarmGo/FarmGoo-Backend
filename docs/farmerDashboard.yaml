@@ -151,3 +151,13 @@
       responses:
         "200":
           description: successfully gotten estimated price for delivery
+
+/api/v1/farmerDash/getOneFarmer:
+   get:
+      summary: this endPoint is to get one Farmer
+      tags: [Get one Farmer]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten one Farmer

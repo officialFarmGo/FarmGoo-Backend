@@ -115,7 +115,7 @@ exports.agentDashboardOverview = async(req, res, next) => {
         res.status(200).json({
             message: 'Agent dashboard fetched successfully',
             data: {
-                greeting: `Welcome ${agent.firstName} ${agent.lastName}`,
+                greeting: `${agent.firstName} ${agent.lastName}`,
                 stats: {
                     farmersManaged: farmersManagedCount,
                     inProgress: inProgressCount,

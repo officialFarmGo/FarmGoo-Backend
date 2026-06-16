@@ -99,7 +99,7 @@ exports.dashBoardOverview = async(req, res, next) =>{
          res.status(200).json({
           message: 'Dashboard fetched successfully',
           data: {
-            greeting: `Hello, ${farmer.firstName}!`,
+            greeting: `${farmer.firstName} ${farmer.lastName}`,
             stats: {
              activeDeliveries: activeDeliveriesCount,
             pendingRequests: pendingRequestsCount,
@@ -385,4 +385,31 @@ exports.farmerTrackDelivery = async(req, res, next) => {
         console.log(error)
         return next({ message: 'something went wrong', statusCode: 500 })
     }
+}
+
+
+exports.getOneFarmer = async(req, res, next) => {
+    try{
+        const farmerId = req.user.id
+
+    const farmer = await farmModel.findById(farmerId)
+        if(!farmer){
+            return next({
+                message: 'farmer not found',
+                statusCode: 404
+            })
+        }
+        res.status(200).json({
+            message: 'gotten one farmer',
+            data: farmer
+        })
+
+    }
+    catch(error){
+        console.log(error)
+            return next({
+                message: 'something went wrong',
+                statusCode: 500
+            })
+        }
 }
