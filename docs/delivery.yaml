@@ -118,22 +118,22 @@ paths:
             schema:
               type: object
               required: 
-                - pickupLocation
+                - AddressOrpickUpLocation
                 - Destination
-                - vehicleType
+                - vehhicleId
               properties:
-                pickupLocation:
+                AddressOrpickUpLocation:
                   type: string
                   example: 23 Liverpool Road Apapa Lagos
                 Destination:
                   type: string
                   example: ikorodu Lagos                
-                vehicleType:
+                vehhicleId:
                   type: string
-                  example: 6a26be437850290aa292bb55                
+                  example: 6a2dd9507901672d4346f51b                
       responses:
         "200":
-          description: successfully gotten estimated price for delivery
+          description: successfully gotten estimated price for delivery for the farmer
 
     
 
