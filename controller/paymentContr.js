@@ -232,19 +232,23 @@ exports.handlePaymentWebhook = async(req, res, next) => {
             await payment.save()
 
             if(!payment.receiver) {
-                let user
+                let wallet
+                if(payment.ownerType === 'farmers') wallet = await farmWalletModel.findOne({ farmer: payment.owner })
+                else if(payment.ownerType === 'agents') wallet = await agentWalletModel.findOne({ agent: payment.owner })
+                else if(payment.ownerType === 'drivers') wallet = await driverWalletModel.findOne({ driver: payment.owner })
 
-                if(payment.ownerType === 'farmers') {
-                    user = await farmWalletModel.findOne({ farmer: payment.owner })
-                } else if(payment.ownerType === 'agents') {
-                    user = await agentWalletModel.findOne({ agent: payment.owner })
-                } else if(payment.ownerType === 'drivers') {
-                    user = await driverWalletModel.findOne({ driver: payment.owner })
-                }
+                if(wallet) {
+                    wallet.availableBalance += payment.amount
+                    await wallet.save()
 
-                if(user) {
-                    user.availableBalance += payment.amount
-                    await user.save()
+                    // Notification — fires only after wallet is credited
+                    await notificationModel.create({
+                        owner: payment.owner,
+                        ownerType: payment.ownerType,
+                        title: 'Wallet Funded Successfully',
+                        message: `₦${payment.amount.toLocaleString()} has been added to your wallet. Your new balance is ₦${wallet.availableBalance.toLocaleString()}.`,
+                        type: 'payment'
+                    })
                 }
             }
         }
