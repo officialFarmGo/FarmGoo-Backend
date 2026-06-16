@@ -11,6 +11,8 @@ const agentModel = require('../model/agent')
 const farmWalletModel = require('../model/farmerWallet')
 const agentWalletModel = require('../model/agentWallet')
 const driverWalletModel = require('../model/driverWallet')
+const notificationModel = require('../model/notification')
+
 
 
 exports.initializePayment = async(req, res, next) =>{
@@ -241,7 +243,6 @@ exports.handlePaymentWebhook = async(req, res, next) => {
                     wallet.availableBalance += payment.amount
                     await wallet.save()
 
-                    // Notification — fires only after wallet is credited
                     await notificationModel.create({
                         owner: payment.owner,
                         ownerType: payment.ownerType,
