@@ -67,18 +67,53 @@ const generateTrackingId = async () => {
   return trackingId;
 };
 
+
+
+ // this is to calculate the estimated price for the delivery
+exports.estimateDeliveryPrice = async (req, res, next) => {
+    try {
+        const { pickupLocation, Destination, vehicleType} = req.body
+
+        const vehicle = await vehicleModel.findById(vehicleType)
+        if (!vehicle) {
+            return next({ message: 'Vehicle type not found', statusCode: 404 })
+        }
+
+        const { distanceKm, duration } = await getDistance(pickupLocation, Destination)
+
+        const totalFare = Math.round(vehicle.baseFare + vehicle.ratePerKm * distanceKm)
+        const commission = Math.round((10 / 100) * totalFare)
+        const amount = Math.round(totalFare + commission)
+
+        return res.status(200).json({
+            message: 'Price estimate calculated',
+            data: {
+                    deliveryFare: totalFare,
+                    serviceFee: commission,
+                    total: amount
+                
+            }
+        })
+
+    } catch (error) {
+        console.log(error)
+        return next({ message: error.message || 'something went wrong', statusCode: 500 })
+    }
+}
+
 exports.agentCreateDelivery = async (req, res, next) => {
     try {
         const agentId = req.user.id
         const { vehhicleId } = req.params
 
         const {
-            agentFarmerId,  
+            agentFarmerId,
             produceType,
             quantity,
             pickupLocation,
             Destination,
-            customersDetails
+            customersName,
+            customersDetails,
         } = req.body
 
         const agent = await agentModel.findById(agentId)
@@ -91,16 +126,16 @@ exports.agentCreateDelivery = async (req, res, next) => {
             return next({ message: 'Farmer not found', statusCode: 404 })
         }
 
+        const vehicle = await vehicleModel.findById(vehhicleId)
+        if (!vehicle) {
+            return next({ message: 'Vehicle type not found', statusCode: 404 })
+        }
+
         const PIN = otpGenerator.generate(4, {
             upperCaseAlphabets: false,
             lowerCaseAlphabets: false,
             specialChars: false
         })
-
-        const vehicle = await vehicleModel.findById(vehhicleId)
-        if (!vehicle) {
-            return next({ message: 'Vehicle type not found', statusCode: 404 })
-        }
 
         const { distanceKm, duration } = await getDistance(pickupLocation, Destination)
 
@@ -108,6 +143,7 @@ exports.agentCreateDelivery = async (req, res, next) => {
         const commission = Math.round((10 / 100) * totalFare)
         const amount = Math.round(totalFare + commission)
 
+        // Wallet check — must have enough to cover total (fare + commission)
         const agentWallet = await agentWalletModel.findOne({ agent: agentId })
         if (!agentWallet) {
             return next({ message: 'Wallet not found', statusCode: 404 })
@@ -134,13 +170,21 @@ exports.agentCreateDelivery = async (req, res, next) => {
             totalFare,
             pickupLocation,
             Destination,
+            customersName,
             customersDetails,
             vehicleType: vehicle._id,
             estimatedDuration: duration,
             requestedByType: 'agents'
         })
 
-        // CHANGE 1: Only broadcast to drivers whose KYC vehicle type matches
+        await new notificationModel({
+            owner: agentId,
+            ownerType: 'agents',
+            title: 'Transport Request Submitted',
+            message: `Your delivery request (${trackingId}) has been submitted. Drivers are being notified.`,
+            type: 'delivery'
+        }).save()
+
         const matchingKycs = await driverKycModel.find({ vehicleType: vehicle._id })
         const matchingDriverIds = matchingKycs.map(k => k.driver)
 
@@ -159,14 +203,17 @@ exports.agentCreateDelivery = async (req, res, next) => {
         }
 
         res.status(201).json({
-            message: 'Delivery request created successfully',
+            message: 'Delivery request confirmed and submitted successfully',
             data: {
                 delivery,
                 estimatedDuration: duration,
                 distance: `${distanceKm.toFixed(2)}km`,
-                totalFare: `₦${totalFare.toLocaleString()}`,
-                commission: `₦${commission.toLocaleString()}`,
-                totalAmount: `₦${amount.toLocaleString()}`
+                breakdown: {
+                    estimatedPrice: `₦${totalFare.toLocaleString()}`,
+                    serviceFee: `₦${commission.toLocaleString()}`,
+                    total: `₦${amount.toLocaleString()}`
+                },
+                driversNotified: drivers.length
             }
         })
 
@@ -185,7 +232,6 @@ exports.agentDeliveryAccept = async (req, res, next) => {
         const driverId = req.user.id
         const { deliveryId } = req.params
 
-        // Fetch delivery first to check vehicle type before touching any data
         const pendingDelivery = await agentDeliveryModel.findOne({
             _id: deliveryId,
             status: 'Pending'
@@ -196,7 +242,6 @@ exports.agentDeliveryAccept = async (req, res, next) => {
             return next({ message: 'Delivery not available or already accepted', statusCode: 404 })
         }
 
-        // CHANGE 2: Guard — driver's KYC vehicle must match the requested vehicle
         const driverKyc = await driverKycModel.findOne({ driver: driverId })
         if (!driverKyc) {
             await session.abortTransaction()
@@ -375,39 +420,5 @@ exports.agentCompleteDelivery = async (req, res, next) => {
         return next({ message: 'something went wrong', statusCode: 500 })
     } finally {
         session.endSession()
-    }
-}
-
-
-
- // this is to calculate the estimated price for the delivery
-exports.estimateDeliveryPrice = async (req, res, next) => {
-    try {
-        const { pickupLocation, Destination, vehicleType} = req.body
-
-        const vehicle = await vehicleModel.findById(vehicleType)
-        if (!vehicle) {
-            return next({ message: 'Vehicle type not found', statusCode: 404 })
-        }
-
-        const { distanceKm, duration } = await getDistance(pickupLocation, Destination)
-
-        const totalFare = Math.round(vehicle.baseFare + vehicle.ratePerKm * distanceKm)
-        const commission = Math.round((10 / 100) * totalFare)
-        const amount = Math.round(totalFare + commission)
-
-        return res.status(200).json({
-            message: 'Price estimate calculated',
-            data: {
-                    deliveryFare: totalFare,
-                    serviceFee: commission,
-                    total: amount
-                
-            }
-        })
-
-    } catch (error) {
-        console.log(error)
-        return next({ message: error.message || 'something went wrong', statusCode: 500 })
     }
 }
