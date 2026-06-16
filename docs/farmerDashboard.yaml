@@ -161,3 +161,11 @@
       responses:
         "200":
           description: successfully gotten one Farmer
+
+/api/v1/crop/getAllCrops:
+   get:
+      summary: this endPoint is to get one Farmer
+      tags: [get all Crops]
+      responses:
+        "200":
+          description: successfully gotten all crops 
