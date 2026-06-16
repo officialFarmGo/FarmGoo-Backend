@@ -1,7 +1,6 @@
 const farmKycModel = require('../model/farmerKyc')
 const farmModel = require('../model/farm')
 const cropsModel = require('../model/crops')
-const {firstLetterChanger} = require('../utils/highFunction')
 const jwt = require('jsonwebtoken')
 
 
@@ -19,12 +18,6 @@ exports.createFarmKyc = async(req, res, next) =>{
         } 
 
         const farmer = await farmModel.findById(farmId);
-        if(!farmer){
-            return next({
-                message: 'farmer not found',
-                statusCode: 404
-            })
-        }
 
         const foundCrops = await cropsModel.find({ _id: { $in: whatDoYouFarm } })
 
@@ -45,9 +38,20 @@ exports.createFarmKyc = async(req, res, next) =>{
 
         })
         await createKyc.save()
-        console.log("farmId:", farmId);
-        farmer.kycVerified = true
-        await farmer.save()
+        // console.log("farmId:", farmId);
+        // farmer.kycVerified = true
+        // await farmer.save()
+
+        const newUpdate = await farmModel.findByIdAndUpdate(
+            farmId,
+            {
+                kycVerified: true
+        },
+        {
+            new: true
+
+        }
+                )
 
          const token = jwt.sign(
         { id: farmer._id, role: 'farmer' },
