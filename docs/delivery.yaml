@@ -107,6 +107,34 @@ paths:
         "200":
           description: delivery has been completed   
 
+  /api/v1/delivery/estimateDeliveryPrice:
+    post:
+      summary: This endpoint is to calculate the estimated delivery for the farmer before creating the request
+      tags: [Farmers Estimated Price for delivery]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - AddressOrpickUpLocation
+                - Destination
+                - vehhicleId
+              properties:
+                AddressOrpickUpLocation:
+                  type: string
+                  example: 23 Liverpool Road Apapa Lagos
+                Destination:
+                  type: string
+                  example: ikorodu Lagos                
+                vehhicleId:
+                  type: string
+                  example: 6a2dd9507901672d4346f51b                
+      responses:
+        "200":
+          description: successfully gotten estimated price for delivery for the farmer
+
     
 
   

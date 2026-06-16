@@ -67,6 +67,64 @@ const generateTrackingId = async () => {
   return trackingId;
 };
 
+
+
+
+
+exports.estimateDeliveryPrice = async (req, res, next) => {
+    try {
+        const { AddressOrpickUpLocation, Destination, vehhicleId} = req.body
+
+        const vehicle = await vehicleModel.findById(vehhicleId)
+        if (!vehicle) {
+            return next({ message: 'Vehicle type not found', statusCode: 404 })
+        }
+
+        const { distanceKm, duration } = await getDistance(AddressOrpickUpLocation, Destination)
+
+        const totalFare = Math.round(vehicle.baseFare + vehicle.ratePerKm * distanceKm)
+        const commission = Math.round((10 / 100) * totalFare)
+        const amount = Math.round(totalFare + commission)
+
+        return res.status(200).json({
+            message: 'Price estimate calculated',
+            data: {
+                    deliveryFare: totalFare,
+                    serviceFee: commission,
+                    total: amount
+                
+            }
+        })
+
+    } catch (error) {
+        console.log(error)
+        return next({ message: error.message || 'something went wrong', statusCode: 500 })
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 exports.createDelivery = async (req, res, next) => {
   try {
     const userId = req.user.id;
