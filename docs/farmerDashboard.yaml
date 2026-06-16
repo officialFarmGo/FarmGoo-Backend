@@ -127,9 +127,6 @@
 /api/v1/agentDelivery/estimatePrice:
    post:
       summary: This endpoint is to calculate the estimated delivery for the agent before creating the request
-      parameters:
-        - in: path
-          name: deliveryId
       tags: [Agents estimated Price for delivery]
       requestBody:
         required: true
