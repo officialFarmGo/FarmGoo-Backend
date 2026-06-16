@@ -118,7 +118,7 @@ exports.createKyc = async(req, res, next) =>{
     catch(error){
         console.log(error)
         return next({
-            message: 'something went wrong',
+            message: error.message,
             statusCode: 500
         })
     }
