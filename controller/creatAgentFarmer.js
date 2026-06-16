@@ -37,7 +37,10 @@ exports.createAgentFarmer = async (req, res, next) => {
         })
 
     } catch (error) {
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({ 
+            message: error.message, 
+            statusCode: 500
+         })
     }
 }
 
@@ -54,6 +57,9 @@ exports.getAllFarmersUnderAgent = async(req, res, next) => {
         })
     }
     catch(error){
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({
+             message: error.message, 
+             statusCode: 500
+             })
     }
 }

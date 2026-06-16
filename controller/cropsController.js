@@ -29,7 +29,7 @@ exports.createCrops = async(req, res, next) =>{
     catch(error){
         console.log(error.message)
         return next({
-            message: 'something went wrong',
+            message: error.message,
             statusCode: 500
         })
 
@@ -49,7 +49,7 @@ exports.getCrops = async(req, res, next) =>{
     }
     catch(error){
         return next({
-            message: 'something went wrong',
+            message: error.message,
             statusCode: 500
         })
 

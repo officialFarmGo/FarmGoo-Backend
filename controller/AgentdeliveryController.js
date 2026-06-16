@@ -97,7 +97,10 @@ exports.estimateDeliveryPrice = async (req, res, next) => {
 
     } catch (error) {
         console.log(error)
-        return next({ message: error.message || 'something went wrong', statusCode: 500 })
+        return next({ 
+            message: error.message
+            , statusCode: 500 
+        })
     }
 }
 
@@ -219,7 +222,10 @@ exports.agentCreateDelivery = async (req, res, next) => {
 
     } catch (error) {
         console.log(error)
-        return next({ message: error.message || 'something went wrong', statusCode: 500 })
+        return next({
+             message: error.message,
+             statusCode: 500 
+            })
     }
 }
 
@@ -324,7 +330,7 @@ exports.agentDeliveryAccept = async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction()
         console.log(error.message)
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({ message: error.message, statusCode: 500 })
     } finally {
         session.endSession()
     }
@@ -417,7 +423,10 @@ exports.agentCompleteDelivery = async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction()
         console.log(error.message)
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({ 
+            message: error.message, 
+            statusCode: 500
+         })
     } finally {
         session.endSession()
     }

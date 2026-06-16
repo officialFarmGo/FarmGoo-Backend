@@ -18,16 +18,22 @@ exports.createFarmKyc = async(req, res, next) =>{
         } 
 
         const farmer = await farmModel.findById(farmId);
-
-        const foundCrops = await cropsModel.find({ _id: { $in: whatDoYouFarm } })
-
-        if(foundCrops.length !== whatDoYouFarm.length) {
+        if(!farmer){
             return next({
-                message: 'one or more crops are invalid',
+                message: 'farmer not found',
                 statusCode: 404
             })
         }
+        console.log('farmer', farmer)
 
+        const foundCrops = await cropsModel.find({ _id: { $in: whatDoYouFarm } })
+
+        if ( !whatDoYouFarm || !Array.isArray(whatDoYouFarm) || whatDoYouFarm.length === 0) {
+                return next({
+             message: "Please select at least one crop",
+                 statusCode: 400
+             });
+            }
         const createKyc = new farmKycModel({
                 farmer: farmId,
                state,
