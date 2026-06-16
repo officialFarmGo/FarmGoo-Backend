@@ -46,7 +46,7 @@ exports.addBank = async (req, res, next) => {
   } catch (error) {
     console.log(error.message)
     return next({
-        message: 'something went wrong',
+        message: error.message,
         statusCode: 500
     })
   }
@@ -72,7 +72,10 @@ exports.getBankList = async(req, res, next) => {
 
     } catch(error) {
       console.log(error.message)
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({
+           message: error.message,
+            statusCode: 500 
+          })
     }
 }
 

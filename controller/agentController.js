@@ -75,7 +75,7 @@ exports.createAgent = async(req, res, next) =>{
     catch(error){
         console.log(error.message)
         next({
-            message: 'something went wrong',
+            message: error.message,
             statusCode: 500
         })
     }
@@ -136,7 +136,7 @@ exports.verifyOtp = async(req, res, next) =>{
     catch(error){
         console.log(error.message)
         next({
-            message: 'something went wrong',
+            message: error.message,
             statusCode: 500
         })
 
@@ -233,7 +233,7 @@ exports.resendOtpforAgents = async(req, res, next) =>{
     }
     catch(error){
          return next({
-                message: 'something went wrong',
+                message: error.message,
                 statusCode: 500
             })
         
@@ -281,7 +281,7 @@ exports.forgetPassword = async(req, res, next) => {
     catch(error){
         console.log(error)
         return next({
-                message: 'something went wrong',
+                message: error.message,
                 statusCode: 500
             })
         
@@ -324,7 +324,7 @@ exports.resetPassword = async(req, res, next) =>{
     catch(error){
         console.log(error)
          return next({
-                message: 'something went wrong',
+                message: error.message,
                 statusCode: 500
             })
         

@@ -128,7 +128,7 @@ exports.agentDashboardOverview = async(req, res, next) => {
 
     } catch(error) {
         console.log(error)
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({ message: error.message, statusCode: 500 })
     }
 }
 
@@ -194,7 +194,7 @@ exports.myFarmersOverview = async(req, res, next) => {
 
     } catch(error) {
         console.log(error)
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({ message: error.message, statusCode: 500 })
     }
 }
 
@@ -243,7 +243,7 @@ exports.getAgentWallet = async(req, res, next) => {
 
     } catch(error) {
         console.log(error)
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({ message: error.message, statusCode: 500 })
     }
 }
 
@@ -303,7 +303,7 @@ exports.getSingleAgentDelivery = async (req, res, next) => {
 
     } catch (error) {
         console.log(error)
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({ message: error.message, statusCode: 500 })
     }
 }
 
@@ -387,6 +387,6 @@ exports.getAllAgentDeliveries = async (req, res, next) => {
 
     } catch (error) {
         console.log(error)
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({ message: error.message, statusCode: 500 })
     }
 }
