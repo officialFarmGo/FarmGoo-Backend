@@ -11,8 +11,6 @@ const agentModel = require('../model/agent')
 const farmWalletModel = require('../model/farmerWallet')
 const agentWalletModel = require('../model/agentWallet')
 const driverWalletModel = require('../model/driverWallet')
-const notificationModel = require('../model/notification')
-
 
 
 exports.initializePayment = async(req, res, next) =>{
@@ -234,25 +232,56 @@ exports.handlePaymentWebhook = async(req, res, next) => {
             await payment.save()
 
             if(!payment.receiver) {
-                let wallet
-                if(payment.ownerType === 'farmers') wallet = await farmWalletModel.findOne({ farmer: payment.owner })
-                else if(payment.ownerType === 'agents') wallet = await agentWalletModel.findOne({ agent: payment.owner })
-                else if(payment.ownerType === 'drivers') wallet = await driverWalletModel.findOne({ driver: payment.owner })
-
-                if(wallet) {
-                    wallet.availableBalance += payment.amount
-                    await wallet.save()
-
-                    await notificationModel.create({
-                        owner: payment.owner,
-                        ownerType: payment.ownerType,
-                        title: 'Wallet Funded Successfully',
-                        message: `₦${payment.amount.toLocaleString()} has been added to your wallet. Your new balance is ₦${wallet.availableBalance.toLocaleString()}.`,
-                        type: 'payment'
-                    })
-                }
-            }
-        }
+                           let wallet
+                           if(payment.ownerType === 'farmers') wallet = await farmWalletModel.findOne({ farmer: payment.owner })
+                           else if(payment.ownerType === 'agents') wallet = await agentWalletModel.findOne({ agent: payment.owner })
+                           else if(payment.ownerType === 'drivers') wallet = await driverWalletModel.findOne({ driver: payment.owner })
+           
+                           if(wallet) {
+                               wallet.availableBalance += payment.amount
+                               await wallet.save()
+           
+                               // Transaction record — one per user type, no delivery ref for top-ups
+                               if(payment.ownerType === 'farmers') {
+                                   await farmTransModel.create({
+                                       farmer: payment.owner,
+                                       wallet: wallet._id,
+                                       amount: payment.amount,
+                                       type: 'Credit',
+                                       description: `Wallet top-up via Korapay (ref: ${payment.reference})`,
+                                       status: 'successful'
+                                   })
+                               } else if(payment.ownerType === 'agents') {
+                                   await agentTransModel.create({
+                                       agent: payment.owner,
+                                       wallet: wallet._id,
+                                       amount: payment.amount,
+                                       type: 'Credit',
+                                       description: `Wallet top-up via Korapay (ref: ${payment.reference})`,
+                                       status: 'Successful'
+                                   })
+                               } else if(payment.ownerType === 'drivers') {
+                                   await driveTransModel.create({
+                                       driver: payment.owner,
+                                       wallet: wallet._id,
+                                       amount: payment.amount,
+                                       type: 'Credit',
+                                       description: `Wallet top-up via Korapay (ref: ${payment.reference})`,
+                                       status: 'Successful'
+                                   })
+                               }
+           
+                               // Notification — fires only after wallet is credited and transaction saved
+                               await notificationModel.create({
+                                   owner: payment.owner,
+                                   ownerType: payment.ownerType,
+                                   title: 'Wallet Funded Successfully',
+                                   message: `₦${payment.amount.toLocaleString()} has been added to your wallet. Your new balance is ₦${wallet.availableBalance.toLocaleString()}.`,
+                                   type: 'payment'
+                               })
+                           }
+                       }
+                   }           
 
         res.status(200).json({ message: 'webhook received' })
 
