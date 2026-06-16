@@ -43,12 +43,12 @@
 
 /api/v1/agent/getFarmersUnderAgent:
    get:
-      summary: this endpoint is to get all the agents deliveries
-      tags: [View all deliveries for the Agent]
+      summary: this endpoint is to get all the farmers under the agent
+      tags: [get All farmers under the Agent]
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: successfully gotten all the agents deliveries
+          description: successfully gotten all the farmes under the specified agent
 
   
