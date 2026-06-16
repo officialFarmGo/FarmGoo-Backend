@@ -18,6 +18,7 @@ exports.createKyc = async(req, res, next) =>{
                         statusCode: 404
                     })
                 }
+                console.log('driverid', driverid)
 
         const driverLicenseFile = req.files.driversLicense
         const vehiclePhotoFile = req.files.vehiclePhoto
@@ -49,7 +50,7 @@ exports.createKyc = async(req, res, next) =>{
  
 
 
-        const newKyc = driverKycModel({
+        const newKyc = new driverKycModel({
     driver: driverid,
     driversLicense: {
         securedUrl: driversExtractedUrl[0],
@@ -118,7 +119,7 @@ exports.createKyc = async(req, res, next) =>{
     catch(error){
         console.log(error)
         return next({
-            message: 'something went wrong',
+            message: error.message,
             statusCode: 500
         })
     }
