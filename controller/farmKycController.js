@@ -2,6 +2,7 @@ const farmKycModel = require('../model/farmerKyc')
 const farmModel = require('../model/farm')
 const cropsModel = require('../model/crops')
 const {firstLetterChanger} = require('../utils/highFunction')
+const jwt = require('jsonwebtoken')
 
 
 exports.createFarmKyc = async(req, res, next) =>{
@@ -9,46 +10,36 @@ exports.createFarmKyc = async(req, res, next) =>{
         const {farmId} = req.params
 
     const { state, specificLocationOrLandmark, whatDoYouFarm, preferredMarketDestination, farmSize } = req.body        
-        // console.log(whatDoYouFarm)
-        // const cropNames = req.body.whatDoYouFarm.map((crop)=>firstLetterChanger(crop.cropsName))
-        // console.log('cropNames', cropNames)
-        // const whatYouFarm = await cropsModel.find({cropsName: {$in:cropNames}}) 
-        // console.log('whatYouFarm', whatYouFarm)
-
-        //    if(whatYouFarm.length != cropNames.length){
-        //     return next({
-        //         message: 'One or more crops are invalid',
-        //         statusCode: 404
-        //     })
-        //    }
-
+       
         const checkKyc = await farmKycModel.findOne({ farmer: farmId })
-        const farmer = await farmModel.findById(farmId);
-        console.log("farmer:", farmer);
         if(checkKyc){
             return next({
                 message: 'KYC already exists for this farmer',
             })
         } 
 
-        const theCropsName = whatDoYouFarm.split(',').map((crop)=>firstLetterChanger(crop.trim()))
+        const farmer = await farmModel.findById(farmId);
+        if(!farmer){
+            return next({
+                message: 'farmer not found',
+                statusCode: 404
+            })
+        }
 
-        const foundCrops = await cropsModel.find({cropsName: {$in:theCropsName}})
+        const foundCrops = await cropsModel.find({ _id: { $in: whatDoYouFarm } })
 
-        if(foundCrops.length !== theCropsName.length){
+        if(foundCrops.length !== whatDoYouFarm.length) {
             return next({
                 message: 'one or more crops are invalid',
                 statusCode: 404
             })
         }
 
-        const cropIds = await foundCrops.map((crops)=>crops._id)
-
         const createKyc = new farmKycModel({
                 farmer: farmId,
                state,
                specificLocationOrLandmark, 
-               whatDoYouFarm: cropIds, 
+               whatDoYouFarm, 
                preferredMarketDestination,
                 farmSize
 
@@ -58,20 +49,16 @@ exports.createFarmKyc = async(req, res, next) =>{
         farmer.kycVerified = true
         await farmer.save()
 
-        // const newUpdate = await farmModel.findByIdAndUpdate(
-        //     farmId,
-        //     {
-        //         kycVerified: true
-        // },
-        // {
-        //     new: true
-
-        // }
-        //         )
+         const token = jwt.sign(
+        { id: farmer._id, role: 'farmer' },
+        process.env.JWT_SECRET,
+         { expiresIn: '1d' }
+        )
 
         res.status(200).json({
             message: 'kyc for farmer created',
-            data: createKyc
+            data: createKyc,
+            token
         })
 
     }
