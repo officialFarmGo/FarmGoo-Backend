@@ -11,6 +11,14 @@ exports.createKyc = async(req, res, next) =>{
         const {driverid} = req.params
         const {vehicleType} = req.body
 
+         const driver = await driverModel.findById(driverid);
+                if(!driver){
+                    return next({
+                        message: 'driver not found',
+                        statusCode: 404
+                    })
+                }
+
         const driverLicenseFile = req.files.driversLicense
         const vehiclePhotoFile = req.files.vehiclePhoto
         const vehiclePapersFile = req.files.VehiclePapers
@@ -81,6 +89,7 @@ exports.createKyc = async(req, res, next) =>{
 
          await newKyc.save()
 
+
          const newUpdate = await driverModel.findByIdAndUpdate(
                      driverid,
                      {
@@ -91,11 +100,18 @@ exports.createKyc = async(req, res, next) =>{
          
                  }
                          )
+
+        const token = jwt.sign(
+                    {id: driver._id, role: 'driver'},
+                    process.env.JWT_SECRET,
+                    {expiresIn: '1d'}
+                );
         
 
         res.status(201).json({
             message: 'successfully created Kyc',
-            data: newKyc
+            data: newKyc,
+            token
         })
 
     }
