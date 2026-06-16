@@ -10,7 +10,7 @@ paths:
       parameters:
         - in: path
           name: vehhicleId
-      tags: [Create delivery for the farmer]
+      tags: [Farmer]
       security: 
         - bearerAuth: []
       requestBody:
@@ -75,7 +75,7 @@ paths:
       parameters:
         - in: path
           name: deliveryId
-      tags: [Accept Delivery by driver]
+      tags: [Driver]
       security: 
         - bearerAuth: []
       responses:
@@ -84,11 +84,11 @@ paths:
 
   /api/v1/delivery/completeDelivery/{deliveryId}:
     post:
-      summary: complete the delivery with the deliveryId in the params and the driver logs in inputting the PIN
+      summary: This endpoint is to complete the delivery with the deliveryId in the params and the driver logs in inputting the PIN
       parameters:
         - in: path
           name: deliveryId
-      tags: [Complete delivery]
+      tags: [Driver]
       security: 
         - bearerAuth: []
       requestBody:
@@ -110,7 +110,7 @@ paths:
   /api/v1/delivery/estimateDeliveryPrice:
     post:
       summary: This endpoint is to calculate the estimated delivery for the farmer before creating the request
-      tags: [Farmers Estimated Price for delivery]
+      tags: [Farmer]
       requestBody:
         required: true
         content: 

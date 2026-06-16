@@ -6,11 +6,11 @@ info:
 paths: 
   /api/v1/agentDelivery/createDelivery/{vehhicleId}:
     post:
-      summary: create the delivery for the agent's Farmer using the vehicle that the driver has listed
+      summary: This endpoint is to create the delivery for the agent's Farmer using the vehicle that the driver has listed
       parameters:
         - in: path
           name: vehhicleId
-      tags: [Create delivery for the agent]
+      tags: [Agent]
       security: 
         - bearerAuth: []
       requestBody:
@@ -59,7 +59,7 @@ paths:
       parameters:
         - in: path
           name: deliveryId
-      tags: [Accept Agents delivery by the driver]
+      tags: [Driver]
       security: 
         - bearerAuth: []
       responses:
@@ -68,11 +68,11 @@ paths:
 
   /api/v1/agentDelivery/completeDelivery/{deliveryId}:
     post:
-      summary: create the delivery for the farmer using the vehicle that the driver has listed
+      summary: This endpoint completes the delivery by the driver by inputing his pin
       parameters:
         - in: path
           name: deliveryId
-      tags: [Complete delivery for the agent by the driver]
+      tags: [Driver]
       security: 
         - bearerAuth: []
       requestBody:
@@ -93,8 +93,8 @@ paths:
   
   /api/v1/agent/createAgentFarmer:
     post:
-      summary: create the delivery for the agent's Farmer using the vehicle that the driver has listed
-      tags: [add new Farmer for Agent]
+      summary: this end point is to create the the agent Farmer
+      tags: [Agent]
       security: 
         - bearerAuth: []
       requestBody:
@@ -123,7 +123,7 @@ paths:
                   example: tomatoes                        
       responses:
         "200":
-          description: Agents farmers delivery has been requested 
+          description: Agents farmers created successfully
 
 
     

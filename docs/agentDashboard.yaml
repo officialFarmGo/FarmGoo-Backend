@@ -1,7 +1,7 @@
 /api/v1/agentDashboard/agentBoard:
    get:
       summary: this endpoint is to get the agents dashboard Overview
-      tags: [Agent DashBoard Overview]
+      tags: [Agent]
       security:
         - bearerAuth: []
       responses:
@@ -11,7 +11,7 @@
 /api/v1/agentDashboard/agentsFarmersOverview:
    get:
       summary: this endpoint is to get the agents farmers Overview
-      tags: [The Agents onboarded farmers Overview]
+      tags: [Agent]
       security:
         - bearerAuth: []
       responses:
@@ -21,7 +21,7 @@
 /api/v1/agentDashboard/getAlldeliveries:
    get:
       summary: this endpoint is to get all the agents deliveries
-      tags: [View all deliveries for the Agent]
+      tags: [Agent]
       security:
         - bearerAuth: []
       responses:
@@ -34,7 +34,7 @@
       parameters:
         - in: path
           name: deliveryId
-      tags: [Track ONE Agents delivery]
+      tags: [Agent]
       security:
         - bearerAuth: []
       responses:
@@ -44,7 +44,7 @@
 /api/v1/agent/getFarmersUnderAgent:
    get:
       summary: this endpoint is to get all the farmers under the agent
-      tags: [get All farmers under the Agent]
+      tags: [Agent]
       security:
         - bearerAuth: []
       responses:
