@@ -55,17 +55,19 @@ exports.createFarmKyc = async(req, res, next) =>{
         })
         await createKyc.save()
         console.log("farmId:", farmId);
+        farmer.kycVerified = true
+        await farmer.save()
 
-        const newUpdate = await farmModel.findByIdAndUpdate(
-            farmId,
-            {
-                kycVerified: true
-        },
-        {
-            new: true
+        // const newUpdate = await farmModel.findByIdAndUpdate(
+        //     farmId,
+        //     {
+        //         kycVerified: true
+        // },
+        // {
+        //     new: true
 
-        }
-                )
+        // }
+        //         )
 
         res.status(200).json({
             message: 'kyc for farmer created',
