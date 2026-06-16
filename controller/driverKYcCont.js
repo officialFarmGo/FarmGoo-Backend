@@ -3,6 +3,7 @@ const vehicleModel = require('../model/vehicleType')
 const cloudinary = require('../utils/cloudinary')
 const fs = require('fs')
 const driverModel = require('../model/driver')
+const jwt = require('jsonwebtoken')
 
 
 
