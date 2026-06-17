@@ -78,7 +78,6 @@
                 example: 07012904290
               password:
                 type: string
-                example: password@P
                 description: New password (only include if changing password)
               profilePicture:
                 type: string
