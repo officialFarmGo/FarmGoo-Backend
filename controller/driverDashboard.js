@@ -372,6 +372,7 @@ exports.getAvailableJobs = async (req, res, next) => {
       .find({
         status: "Pending",
         driverId: { $exists: false }, 
+        rejectedBy: { $nin: [driverId] }
       })
       .select(
         "trackingId productType quantity weight " +

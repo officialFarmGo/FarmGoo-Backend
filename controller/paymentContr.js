@@ -297,3 +297,142 @@ exports.handlePaymentWebhook = async(req, res, next) => {
 
 
 
+
+
+exports.withdrawFunds = async(req, res, next) => {
+    try {
+        const id  = req.user.id
+        const userRole = req.user.role
+        const { amount, bankCode, accountNumber, bankName } = req.body
+
+        // 1. find user
+        let user
+        if(userRole === 'farmer') user = await farmerModel.findById(id)
+        else if(userRole === 'driver') user = await driverModel.findById(id)
+        else if(userRole === 'agent') user = await agentModel.findById(id)
+
+        if(!user) {
+            return next({ message: 'user not found', statusCode: 404 })
+        }
+
+        // 2. find wallet
+        let wallet
+        if(userRole === 'farmer') wallet = await farmWalletModel.findOne({ farmer: id })
+        else if(userRole === 'driver') wallet = await driverWalletModel.findOne({ driver: id })
+        else if(userRole === 'agent') wallet = await agentWalletModel.findOne({ agent: id })
+
+        if(!wallet) {
+            return next({ message: 'wallet not found', statusCode: 404 })
+        }
+
+        // 3. check balance
+        if(wallet.availableBalance < amount) {
+            return next({
+                message: `Insufficient balance. Available: ₦${wallet.availableBalance.toLocaleString()}`,
+                statusCode: 400
+            })
+        }
+
+        // 4. generate reference
+        const ref = otpGenerator.generate(6, {
+            upperCaseAlphabets: false,
+            specialChars: false,
+            lowerCaseAlphabets: false
+        })
+        const reference = `WDR-${ref}`
+
+        // 5. call korapay payout API
+        const korapayResponse = await axios.post(
+            'https://api.korapay.com/merchant/api/v1/transactions/disburse',
+            {
+                reference,
+                destination: {
+                    type: 'bank_account',
+                    amount,
+                    currency: 'NGN',
+                    narration: `FarmGoo withdrawal by ${user.firstName} ${user.lastName}`,
+                    bank_account: {
+                        bank: bankCode,
+                        account: accountNumber
+                    },
+                    customer: {
+                        name: `${user.firstName} ${user.lastName}`,
+                        email: user.email
+                    }
+                }
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.KORA_API_KEY}`
+                }
+            }
+        )
+
+        const korapayStatus = korapayResponse.data?.data?.status
+
+        // 6. deduct from wallet
+        wallet.availableBalance -= amount
+        await wallet.save()
+
+        // 7. create transaction record
+        const ownerType = userRole === 'farmer' ? 'farmers' : userRole === 'driver' ? 'drivers' : 'agents'
+
+        if(userRole === 'farmer') {
+            await farmTransModel.create({
+                farmer: id,
+                wallet: wallet._id,
+                amount,
+                type: 'Debit',
+                description: `Withdrawal to ${bankName} - ****${accountNumber.slice(-4)}`,
+                status: 'Pending Release',
+                reference
+            })
+        } else if(userRole === 'driver') {
+            await driveTransModel.create({
+                driver: id,
+                wallet: wallet._id,
+                amount,
+                type: 'Debit',
+                description: `Withdrawal to ${bankName} - ****${accountNumber.slice(-4)}`,
+                status: 'Pending Release',
+                reference
+            })
+        } else if(userRole === 'agent') {
+            await agentTransModel.create({
+                agent: id,
+                wallet: wallet._id,
+                amount,
+                type: 'Debit',
+                description: `Withdrawal to ${bankName} - ****${accountNumber.slice(-4)}`,
+                status: 'Pending Release',
+                reference
+            })
+        }
+
+        // 8. create notification
+        await notificationModel.create({
+            owner: id,
+            ownerType,
+            title: 'Withdrawal Initiated',
+            message: `Your withdrawal of ₦${amount.toLocaleString()} to ${bankName} ****${accountNumber.slice(-4)} is being processed.`,
+            type: 'payment'
+        })
+
+        res.status(200).json({
+            message: 'Withdrawal initiated successfully',
+            data: {
+                reference,
+                amount,
+                bankName,
+                accountNumber: `****${accountNumber.slice(-4)}`,
+                status: korapayStatus || 'processing',
+                newBalance: wallet.availableBalance
+            }
+        })
+
+    } catch(error) {
+        console.log(error.message)
+        return next({ message: error.message || 'something went wrong', statusCode: 500 })
+    }
+}
+

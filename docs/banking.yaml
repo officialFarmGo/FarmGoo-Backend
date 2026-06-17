@@ -32,6 +32,40 @@ paths:
                   example: 89882339328923                  
       responses:
         "201":
-          description: user's bank successfully added       
+          description: user's bank successfully added    
+
+  /api/v1/payment/withdraw:
+    post:
+      summary: this endpoint is to withdraw money from your wallet
+      tags: [withdraw]
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - amount
+                - bankCode
+                - accountNumber
+                - bankName
+              properties:
+                amount:
+                  type: number
+                  example: 1000
+                bankCode:
+                  type: string
+                  example: 044
+                accountNumber:
+                  type: string
+                  example: 0123456789         
+                bankName:
+                  type: string
+                  example: Access Bank          
+      responses:
+        "201":
+          description: user's has withdrawn successfully     
 
   
