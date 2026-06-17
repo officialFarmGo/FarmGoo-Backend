@@ -417,26 +417,29 @@ exports.updateProfile = async(req, res, next) =>{
         }
 
 
-        if (req.files && req.files.profilePicture) {
-    const file = req.files.profilePicture[0]
+        if(req.files && req.files.profilePicture) {
+        const newfile = req.files.profilePicture
+        const newImage = newfile.map((e) => e.path)
 
-    const cloudinaryResponse = await new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-     { folder: 'profile_pictures' },
-    (error, result) => {
-    if (error) reject(error)
-    else resolve(result)
-     }
-    )
-    stream.end(file.buffer)
-    })
+        const uploadtocloudinary = newImage.map((e) => cloudinary.uploader.upload(e))
+        const cloudinaryResponse = await Promise.all(uploadtocloudinary)
 
-    updateFields.profilePicture = {
-        securedUrl: cloudinaryResponse.secure_url,
-        publicId: cloudinaryResponse.public_id
+        updateFields.profilePicture = {
+        securedUrl: cloudinaryResponse[0].secure_url,
+        publicId: cloudinaryResponse[0].public_id
+        }
+
+    await Promise.all(
+        newfile.map((e) => {
+            try {
+                fs.unlinkSync(e.path)
+            } catch(err) {
+                console.log('file already deleted:', e.path)
+            }
+            })
+        )
     }
-    // No fs.unlinkSync — nothing was saved to disk
-}
+
              if(password){
                 const salt = await bcrypt.genSalt(10);
                 updateFields.password = await bcrypt.hash(password, salt)

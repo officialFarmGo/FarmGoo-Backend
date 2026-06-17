@@ -18,7 +18,7 @@ router.get('/trackdelivery/:deliveryId', authenticate, getSingleAgentDelivery)
 
 router.get('/getAlldeliveries', authenticate, getAllAgentDeliveries)
 
-router.patch('/updateProfile', authenticate, uploadToMemory.fields([{name:'profilePicture'}]), updateProfile)
+router.patch('/updateProfile', authenticate, upload.fields([{name:'profilePicture'}]), updateProfile)
 
 
 
