@@ -1,7 +1,10 @@
 const router = require('express').Router()
 
 
-const {agentDashboardOverview, myFarmersOverview, getAgentWallet, getSingleAgentDelivery, getAllAgentDeliveries} = require('../controller/agentDashboardOverview')
+const {agentDashboardOverview, myFarmersOverview, getAgentWallet, getSingleAgentDelivery, getAllAgentDeliveries, updateProfile} = require('../controller/agentDashboardOverview')
+
+const {upload} = require('../middleWare/multer')
+
 
 const {authenticate} = require('../middleWare/auth')
 
@@ -14,6 +17,8 @@ router.get('/agentWallet', authenticate, getAgentWallet)
 router.get('/trackdelivery/:deliveryId', authenticate, getSingleAgentDelivery)
 
 router.get('/getAlldeliveries', authenticate, getAllAgentDeliveries)
+
+router.patch('/updateProfile', authenticate, upload.fields([{name:'profilePicture'}]), updateProfile)
 
 
 

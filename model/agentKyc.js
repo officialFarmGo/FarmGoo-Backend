@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 agentKycSchema = new mongoose.Schema({
-    agentId: {
+    agent: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'agents',
         required: true
@@ -26,10 +26,6 @@ agentKycSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    kinsphoneNumber: {
-        type: String,
-        required: true
-    },
     kinsEmail: {
         type: String,
         required: true
@@ -42,7 +38,18 @@ agentKycSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-
-
-
+    verificationDocument:{
+        securedUrl: {
+            type: String,
+            trim: true
+        },
+        publicId: {
+            type:String,
+            trim: true
+        }
+    },
 })
+
+const agentKycModel = mongoose.model('agentKycs', agentKycSchema)
+
+module.exports = agentKycModel
