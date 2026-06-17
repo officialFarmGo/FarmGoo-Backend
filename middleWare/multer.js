@@ -29,3 +29,17 @@ exports.upload = multer({
 
 
 })
+
+exports.uploadToMemory = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 1024 * 1024 * 40
+    },
+    fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+            cb(new Error('only image files are allowed'))
+        } else {
+            cb(null, true)
+        }
+    }
+})
