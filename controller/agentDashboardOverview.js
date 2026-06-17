@@ -428,7 +428,15 @@ exports.updateProfile = async(req, res, next) =>{
         securedUrl: extractedUrl[0],
         publicId: cloudinaryResponse[0].public_id
     }
-        }
+
+    await Promise.all(
+            newfile.map((e)=>{
+             fs.unlinkSync(e.path)
+                            
+             })
+           )
+
+                    }
 
              if(password){
                 const salt = await bcrypt.genSalt(10);
