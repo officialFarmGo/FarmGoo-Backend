@@ -52,7 +52,7 @@ const agentDeliverySchema = new mongoose.Schema({
     },
     vehicleType: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'vehicletype',  
+        ref: 'vehicletypes',  
         required: true
     },
     totalFare: {
