@@ -5,6 +5,10 @@ const agentTransModel = require('../model/agentTransaction')
 const mongoose = require('mongoose')
 const agentWalletModel = require('../model/agentWallet')
 const bankModel = require('../model/bankModel')
+const cloudinary = require('../utils/cloudinary')
+const fs = require('fs')
+const bcrypt = require('bcrypt')
+
 
 exports.agentDashboardOverview = async(req, res, next) => {
     try {
@@ -307,9 +311,7 @@ exports.getSingleAgentDelivery = async (req, res, next) => {
     }
 }
 
-// ============================================
-// GET ALL AGENT DELIVERIES (Active Deliveries screen)
-// ============================================
+
 exports.getAllAgentDeliveries = async (req, res, next) => {
     try {
         const agentId = req.user.id
@@ -388,5 +390,77 @@ exports.getAllAgentDeliveries = async (req, res, next) => {
     } catch (error) {
         console.log(error)
         return next({ message: error.message, statusCode: 500 })
+    }
+}
+
+
+
+exports.updateProfile = async(req, res, next) =>{
+    try{
+        const agentId = req.user.id
+
+        const {firstName, lastName, email, phoneNumber, password} = req.body
+
+        const agent = await agentModel.findById(agentId)
+        if(!agent){
+            return next({
+                message: 'agent not found'
+            })
+        }
+        
+
+              const updateFields = {
+            firstName: firstName || agent.firstName,
+            lastName: lastName || agent.lastName,
+            email: email || agent.email,
+            phoneNumber: phoneNumber || agent.phoneNumber,
+        }
+
+        if(req.files && req.files.profilePicture)
+             {
+                const newfile = req.files.profilePicture
+             const newImage = newfile.map((e)=>e.path)
+       
+             const uploadtocloudinary = newImage.map((e)=>cloudinary.uploader.upload(e))
+             const cloudinaryResponse = await Promise.all(uploadtocloudinary)
+             const extractedUrl = cloudinaryResponse.map((e)=>e.secure_url)
+             updateFields.profilePicture ={
+        securedUrl: extractedUrl[0],
+        publicId: cloudinaryResponse[0].public_id
+    }
+        }
+
+             if(password){
+                const salt = await bcrypt.genSalt(10);
+                updateFields.password = await bcrypt.hash(password, salt)
+            }
+        
+
+        const updateAgent = await agentModel.findByIdAndUpdate(
+            agentId,
+            updateFields,
+            {new: true}
+
+            
+        ).select('-password')
+
+       
+        res.status(200).json({
+            message: 'successfully updated profile',
+            data: updateAgent
+        })
+
+
+        
+
+    }
+    catch(error){
+        console.log(error.message)
+        return next({
+            message: error.message,
+            statusCode: 500
+            
+        })
+
     }
 }

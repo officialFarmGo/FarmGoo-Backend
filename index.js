@@ -38,6 +38,8 @@ const agentDashboardRouter = require('./router/agentDashboardRouter')
 
 const notificationsRouter = require('./router/notificationsRouter')
 
+const agentkycRouter = require('./router/agentKycRouter')
+
 
 
 
@@ -79,6 +81,7 @@ app.use('/api/v1/agentDashboard', agentDashboardRouter)
 
 app.use('/api/v1/notifications', notificationsRouter)
 
+app.use('/api/v1/agentKyc', agentkycRouter)
 
 
 

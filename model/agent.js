@@ -50,7 +50,17 @@ const agentSchema = new mongoose.Schema({
     role: {
         type: String, 
         default: 'agent'
-    }
+    },
+    profilePicture:{
+        securedUrl: {
+            type: String,
+            trim: true
+        },
+        publicId: {
+            type:String,
+            trim: true
+        }
+    },
 
 },  {timestamps: true})
 

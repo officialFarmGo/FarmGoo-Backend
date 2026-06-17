@@ -51,4 +51,41 @@
         "200":
           description: successfully gotten all the farmes under the specified agent
 
-  
+/api/v1/agentDashboard/updateProfile:
+  patch:
+    summary: Update agent profile
+    tags: [Agent]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              firstName:
+                type: string
+                description: Agent's first name
+              lastName:
+                type: string
+                description: Agent's last name
+              email:
+                type: string
+                format: email
+                description: Agent's email address
+              phoneNumber:
+                type: string
+                description: Agent's phone number
+              password:
+                type: string
+                format: password
+                description: New password (only include if changing password)
+              profilePicture:
+                type: string
+                format: binary
+                description: Profile picture image (JPG, PNG, GIF - max 2MB)
+    responses:
+      "200":
+        description: Profile updated successfully
+        
