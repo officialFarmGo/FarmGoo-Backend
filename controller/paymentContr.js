@@ -253,7 +253,7 @@ exports.handlePaymentWebhook = async(req, res, next) => {
                                        amount: payment.amount,
                                        type: 'Credit',
                                        description: `Wallet top-up via Korapay (ref: ${payment.reference})`,
-                                       status: 'successful'
+                                       status: 'completed'
                                    })
                                } else if(payment.ownerType === 'agents') {
                                    await agentTransModel.create({
