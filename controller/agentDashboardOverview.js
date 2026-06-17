@@ -416,11 +416,12 @@ exports.updateProfile = async(req, res, next) =>{
             phoneNumber: phoneNumber || agent.phoneNumber,
         }
 
+
+        const newfile = req.files.profilePicture
+             const newImage = newfile.map((e)=>e.path)
+
         if(req.files && req.files.profilePicture)
              {
-                const newfile = req.files.profilePicture
-             const newImage = newfile.map((e)=>e.path)
-       
              const uploadtocloudinary = newImage.map((e)=>cloudinary.uploader.upload(e))
              const cloudinaryResponse = await Promise.all(uploadtocloudinary)
              const extractedUrl = cloudinaryResponse.map((e)=>e.secure_url)

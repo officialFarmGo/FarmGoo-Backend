@@ -66,25 +66,24 @@
             properties:
               firstName:
                 type: string
-                description: Agent's first name
+                example: John
               lastName:
                 type: string
-                description: Agent's last name
+                example: Philips
               email:
                 type: string
-                format: email
-                description: Agent's email address
+                example: stingify@gmail.com
               phoneNumber:
                 type: string
-                description: Agent's phone number
+                example: 07012904290
               password:
                 type: string
-                format: password
+                example: password@P
                 description: New password (only include if changing password)
               profilePicture:
                 type: string
                 format: binary
-                description: Profile picture image (JPG, PNG, GIF - max 2MB)
+                description: Profile picture image (JPG, PNG, GIF)
     responses:
       "200":
         description: Profile updated successfully
