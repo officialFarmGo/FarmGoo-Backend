@@ -355,24 +355,6 @@ exports.acceptDelivery = async(req, res, next) =>{
 }
 
 
-exports.rejectDelivery = async (req, res, next) => {
-    try {
-        const { deliveryId } = req.params
-
-        const delivery = await deliveryModel.findById(deliveryId)
-
-        if (!delivery) {
-            return next({ message: 'Delivery not found', statusCode: 404 })
-        }
-
-        res.status(200).json({
-            message: 'Delivery rejected',
-        })
-
-    } catch (error) {
-        return next({ message: error.message, statusCode: 500 })
-    }
-}
 
 
 exports.completeDelivery = async(req, res, next) =>{
@@ -465,5 +447,37 @@ exports.completeDelivery = async(req, res, next) =>{
     }
     finally{
         session.endSession()
+    }
+}
+
+
+exports.rejectDelivery = async(req, res, next) =>{
+    try{
+        const driverId = req.user.id
+        const {deliveryId} = req.params
+
+        const delivery = await deliveryModel.findById(deliveryId)
+        if(!delivery){
+            return next({
+                message: 'delivery not found',
+                data: 404
+            })
+        }
+
+        await deliveryModel.findByIdAndUpdate(
+            driverId,
+            {$addToSet: {rejectedBy: driverId}}
+        )
+
+        res.status(200).json({
+            message: 'Delivery rejected '
+        })
+
+    }
+    catch(error){
+        return next({
+            message: error.message,
+            statusCode: 500
+        })
     }
 }

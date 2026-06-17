@@ -87,7 +87,11 @@ const deliverySchema = new mongoose.Schema({
     },
     estimatedDuration: {
         type: String
-    }
+    },
+    rejectedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'drivers'
+}]
 
 },  {timestamps: true})
 

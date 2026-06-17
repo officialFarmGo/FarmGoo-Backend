@@ -1,6 +1,6 @@
 const router = require('express').Router()
 
-const {initializePayment, verifyPayment, handlePaymentWebhook} = require('../controller/paymentContr')
+const {initializePayment, verifyPayment, handlePaymentWebhook, withdrawFunds} = require('../controller/paymentContr')
 
 const {authenticate} = require('../middleWare/auth')
 
@@ -12,7 +12,7 @@ router.get('/verify-Payment', authenticate, verifyPayment)
 
 router.post('/verify-webhook', handlePaymentWebhook)
 
-
+router.post('/withdraw', authenticate, withdrawFunds)
 
 
 module.exports = router

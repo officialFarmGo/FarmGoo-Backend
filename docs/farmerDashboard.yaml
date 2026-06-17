@@ -179,3 +179,61 @@
       responses:
         "200":
           description: successfully gotten one Driver
+
+/api/v1/agentKyc/createDelivery/{agentId}:
+    post:
+      summary: this endpoint is to create an Agents kyc
+      tags: [Agent]
+      parameters:
+        - in: path
+          name: agentId
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - state
+                - residentialAddress
+                - kinsFirstName
+                - kinsLastName
+                - kinsPhoneNumber
+                - kinsEmail
+                - kinsRelationship
+                - kinsLgaOrTown
+                - verificationDocument                
+              properties:
+                state:
+                  type: string
+                  example: Lagos State
+                residentialAddress:
+                  type: string
+                  format: binary
+                  description: vehicle photo image
+                kinsFirstName:
+                  type: string
+                  format: binary
+                  description: vehicle papers image
+                kinsLastName:
+                  type: string
+                  description: ObjectId of the vehicle type
+                kinsPhoneNumber:
+                  type: string
+                  description: ObjectId of the vehicle type
+                kinsEmail:
+                  type: string
+                  example: can include email
+                kinsRelationship:
+                  type: string
+                  description: ObjectId of the vehicle type
+                kinsLgaOrTown:
+                  type: string
+                  description: ObjectId of the vehicle type
+                verificationDocument:
+                  type: string
+                  format: binary
+                  description: documents to show you are an agent
+      responses:
+        "201":
+          description: successfully created Kyc for agent
