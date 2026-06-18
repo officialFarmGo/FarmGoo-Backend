@@ -755,7 +755,9 @@ exports.getOneDriver = async (req, res, next) => {
 
 
 
-
+const toLagosTime = (date) => {
+    return new Date(new Date(date).toLocaleString('en-US', { timeZone: 'Africa/Lagos' }))
+}
 
 exports.getDriverEarnings = async (req, res, next) => {
     try {
@@ -766,7 +768,7 @@ exports.getDriverEarnings = async (req, res, next) => {
             return next({ message: 'Driver not found', statusCode: 404 })
         }
 
-        const now = new Date()
+        const now = toLagosTime(new Date())
 
         const startOfWeek = new Date(now)
         startOfWeek.setDate(now.getDate() - now.getDay()) // Sunday
@@ -784,7 +786,6 @@ exports.getDriverEarnings = async (req, res, next) => {
             recentAgentDeliveries,
             withdrawalHistory
         ] = await Promise.all([
-
 
             driveTransModel.aggregate([
                 {
@@ -856,13 +857,13 @@ exports.getDriverEarnings = async (req, res, next) => {
         const totalCleared = totalClearedResult[0]?.total || 0
         const walletBalance = walletData?.availableBalance || 0
 
-        // ── Bar chart — earnings per day of current week ─────────────────
-        // Days: 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+        // ── Bar chart — earnings per day of current week (Lagos timezone) ─
         const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
         const dailyTotals = [0, 0, 0, 0, 0, 0, 0]
 
         allWeekTransactions.forEach(tx => {
-            const dayIndex = new Date(tx.createdAt).getDay()
+            const localDate = toLagosTime(tx.createdAt)
+            const dayIndex = localDate.getDay()
             dailyTotals[dayIndex] += tx.amount
         })
 
@@ -880,8 +881,8 @@ exports.getDriverEarnings = async (req, res, next) => {
 
         // ── Recent earnings — merge farmer + agent, sort by date ─────────
         const formatDate = (date) => {
-            const d = new Date(date)
-            const now = new Date()
+            const d = toLagosTime(date)
+            const now = toLagosTime(new Date())
             const isToday = d.toDateString() === now.toDateString()
             const yesterday = new Date(now)
             yesterday.setDate(now.getDate() - 1)
