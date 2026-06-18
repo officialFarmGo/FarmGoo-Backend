@@ -95,7 +95,7 @@ const deliverySchema = new mongoose.Schema({
 
 },  {timestamps: true})
 
-deliveryModel = mongoose.model('deliverys', deliverySchema)
+const deliveryModel = mongoose.model('deliverys', deliverySchema)
 
 module.exports = deliveryModel
 
