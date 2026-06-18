@@ -431,3 +431,30 @@ exports.agentCompleteDelivery = async (req, res, next) => {
         session.endSession()
     }
 }
+
+
+exports.rejectDelivery = async (req, res, next) => {
+    try {
+        const driverId = req.user.id
+        const { deliveryId } = req.params
+
+        const delivery = await agentDeliveryModel.findById(deliveryId)
+        if (!delivery) {
+            return next({ message: 'Delivery not found', statusCode: 404 })
+        }
+
+        // add driver to rejectedBy array   
+        await agentDeliveryModel.findByIdAndUpdate(
+            deliveryId,
+            { $addToSet: { rejectedBy: driverId } }
+            // $addToSet prevents duplicate entries if driver rejects twice
+        )
+
+        res.status(200).json({
+            message: 'Delivery rejected'
+        })
+
+    } catch (error) {
+        return next({ message: error.message, statusCode: 500 })
+    }
+}
