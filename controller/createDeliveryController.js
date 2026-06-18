@@ -14,6 +14,11 @@ const farmWalletModel = require("../model/farmerWallet");
 const otpGenerator = require('otp-generator')
 const notificationModel = require('../model/notification')
 const driverKycModel = require('../model/driverKyc')
+const agentDeliveryModel = require('../model/agentDelivery')
+const agentFarmerModel = require('../model/agentFarmer')
+const agentWalletModel = require('../model/agentWallet')
+const agentTransModel = require('../model/agentTransaction')
+const agentModel = require('../model/agent')
 
 
 
@@ -251,73 +256,44 @@ exports.createDelivery = async (req, res, next) => {
 
 // Get all one delivery function
 
-
-exports.acceptDelivery = async(req, res, next) =>{
+exports.acceptDelivery = async (req, res, next) => {
     const session = await require('mongoose').startSession()
     session.startTransaction()
 
-    try{
+    try {
         const driverId = req.user.id
-        const {deliveryId} = req.params
+        const { deliveryId } = req.params
 
-        const pendingDelivery = await deliveryModel.findOne({ _id: deliveryId, status: 'Pending' })
-        if(!pendingDelivery) {
+        const [farmerDelivery, agentDelivery] = await Promise.all([
+            deliveryModel.findOne({ _id: deliveryId, status: 'Pending' }),
+            agentDeliveryModel.findOne({ _id: deliveryId, status: 'Pending' })
+        ])
+
+        const pendingDelivery = farmerDelivery || agentDelivery
+
+        if (!pendingDelivery) {
             await session.abortTransaction()
             return next({ message: 'Delivery does not exist or is no longer available', statusCode: 404 })
         }
 
         const driverKyc = await driverKycModel.findOne({ driver: driverId })
-        if(!driverKyc) {
+        if (!driverKyc) {
             await session.abortTransaction()
             return next({ message: 'Complete your KYC before accepting deliveries', statusCode: 403 })
         }
 
-        if(driverKyc.vehicleType.toString() !== pendingDelivery.vehhicleId.toString()) {
+        
+        const deliveryVehicleId = farmerDelivery
+            ? pendingDelivery.vehhicleId.toString()
+            : pendingDelivery.vehicleType.toString()
+
+        if (driverKyc.vehicleType.toString() !== deliveryVehicleId) {
             await session.abortTransaction()
-            return next({ 
-                message: 'Your vehicle type does not match what this farmer requested. You can only accept jobs that match your registered vehicle.',
+            return next({
+                message: 'Your vehicle type does not match what was requested. You can only accept jobs that match your registered vehicle.',
                 statusCode: 403
             })
         }
-
-        const delivery = await deliveryModel.findOneAndUpdate(
-            { _id: deliveryId, status: 'Pending' },
-            { driverId: driverId, status: 'Accepted' },
-            { new: true, session },
-        )
-        if(!delivery){
-            await session.abortTransaction()
-            return next({ message: 'Delivery was already accepted by another driver', statusCode: 409 })
-        }
-
-        const farmWallet = await farmWalletModel.findOneAndUpdate(
-            {
-                farmer: delivery.farmerId,
-                availableBalance: {$gte: delivery.amount}
-            },
-            {
-                $inc: {
-                    availableBalance: -delivery.amount,
-                    escrowBalance: +delivery.totalFare
-                },
-            },
-            {new: true, session}
-        )
-
-        if(!farmWallet){
-            await session.abortTransaction()
-            return next({ message: 'Farmer has insufficient balance', statusCode: 400 })
-        }
-
-        await farmTransModel.create([{
-            farmer: delivery.farmerId,
-            wallet: farmWallet._id,
-            delivery: delivery._id,
-            amount: delivery.amount,
-            type: 'Debit',
-            description: 'payment for delivery',
-            status: 'Pending Release'
-        }], {session})
 
         const driver = await driverModel.findById(driverId)
         if (!driver) {
@@ -325,159 +301,283 @@ exports.acceptDelivery = async(req, res, next) =>{
             return next({ message: 'Driver not found', statusCode: 404 })
         }
 
+        let deliveryWithoutPin
+
+        if (farmerDelivery) {
+            const delivery = await deliveryModel.findOneAndUpdate(
+                { _id: deliveryId, status: 'Pending' },
+                { driverId, status: 'Accepted' },
+                { new: true, session }
+            )
+            if (!delivery) {
+                await session.abortTransaction()
+                return next({ message: 'Delivery was already accepted by another driver', statusCode: 409 })
+            }
+
+            const farmWallet = await farmerWalletModel.findOneAndUpdate(
+                { farmer: delivery.farmerId, availableBalance: { $gte: delivery.amount } },
+                { $inc: { availableBalance: -delivery.amount, escrowBalance: +delivery.totalFare } },
+                { new: true, session }
+            )
+            if (!farmWallet) {
+                await session.abortTransaction()
+                return next({ message: 'Farmer has insufficient balance', statusCode: 400 })
+            }
+
+            await farmTransModel.create([{
+                farmer: delivery.farmerId,
+                wallet: farmWallet._id,
+                delivery: delivery._id,
+                amount: delivery.amount,
+                type: 'Debit',
+                description: `Payment held for delivery ${delivery.trackingId}`,
+                status: 'Pending Release'
+            }], { session })
+
+            await new notificationModel({
+                owner: delivery.farmerId,
+                ownerType: 'farmers',
+                title: 'Job Accepted',
+                message: `Driver ${driver.firstName} ${driver.lastName} accepted your transport request`,
+                type: 'delivery'
+            }).save({ session })
+
+            deliveryWithoutPin = await deliveryModel.findById(deliveryId).select('-PIN')
+
+        } else {
+            const delivery = await agentDeliveryModel.findOneAndUpdate(
+                { _id: deliveryId, status: 'Pending' },
+                { driverId, status: 'Accepted' },
+                { new: true, session }
+            )
+            if (!delivery) {
+                await session.abortTransaction()
+                return next({ message: 'Delivery was already accepted by another driver', statusCode: 409 })
+            }
+
+            const agentWallet = await agentWalletModel.findOneAndUpdate(
+                { agent: delivery.agentId, availableBalance: { $gte: delivery.amount } },
+                { $inc: { availableBalance: -delivery.amount, escrowBalance: +delivery.totalFare } },
+                { new: true, session }
+            )
+            if (!agentWallet) {
+                await session.abortTransaction()
+                return next({ message: 'Agent has insufficient balance', statusCode: 400 })
+            }
+
+            await agentTransModel.create([{
+                agent: delivery.agentId,
+                wallet: agentWallet._id,
+                delivery: delivery._id,
+                amount: delivery.amount,
+                type: 'Debit',
+                description: `Payment held for delivery ${delivery.trackingId}`,
+                status: 'Pending'
+            }], { session })
+
+            await new notificationModel({
+                owner: delivery.agentId,
+                ownerType: 'agents',
+                title: 'Job Accepted',
+                message: `Driver ${driver.firstName} ${driver.lastName} accepted your transport request`,
+                type: 'delivery'
+            }).save({ session })
+
+            deliveryWithoutPin = await agentDeliveryModel.findById(deliveryId).select('-PIN')
+        }
+
         await driverModel.findByIdAndUpdate(driverId, { isAvailable: false }, { session })
-
-        await new notificationModel({
-            owner: delivery.farmerId,
-            ownerType: 'farmers',
-            title: 'Job Accepted',
-            message: `Driver ${driver.firstName} ${driver.lastName} accepted your transport request`,
-            type: 'delivery'
-        }).save({ session })
-
         await session.commitTransaction()
 
-        const deliveryWithoutPin = await deliveryModel.findById(deliveryId).select('-PIN')
-
         res.status(200).json({
-            message: 'Delivery Accepted Successfully',
+            message: 'Delivery accepted successfully',
             data: deliveryWithoutPin
         })
-    }
-    catch(error){
-        await session.abortTransaction() 
+
+    } catch (error) {
+        await session.abortTransaction()
         console.log(error.message)
         return next({ message: error.message, statusCode: 500 })
-    }
-    finally{
+    } finally {
         session.endSession()
     }
 }
 
 
 
-
-exports.completeDelivery = async(req, res, next) =>{
+exports.completeDelivery = async (req, res, next) => {
     const session = await require('mongoose').startSession()
     session.startTransaction()
-    try{
-        const driverId = req.user.id
-        const {deliveryId} = req.params
-        const {PIN} = req.body
 
-        const deliveries = await deliveryModel.findOne({
-            _id: deliveryId,
-            driverId: driverId,
-            status: 'Accepted'
-        })
-        if(!deliveries){
+    try {
+        const driverId = req.user.id
+        const { deliveryId } = req.params
+        const { PIN } = req.body
+
+        // Check both models — must belong to this driver and be Accepted
+        const [farmerDelivery, agentDelivery] = await Promise.all([
+            deliveryModel.findOne({ _id: deliveryId, driverId, status: 'Accepted' }),
+            agentDeliveryModel.findOne({ _id: deliveryId, driverId, status: 'Accepted' })
+        ])
+
+        const delivery = farmerDelivery || agentDelivery
+
+        if (!delivery) {
             await session.abortTransaction()
-            return next({ message: 'delivery not found', statusCode: 404 })
+            return next({ message: 'Delivery not found', statusCode: 404 })
         }
-        if(deliveries.PIN !== PIN){
+
+        if (delivery.PIN !== PIN) {
             await session.abortTransaction()
             return next({ message: 'Invalid PIN', statusCode: 400 })
         }
 
-        await deliveryModel.findByIdAndUpdate(deliveryId, {status: 'Delivered'}, {session})
+        if (farmerDelivery) {
+            // ── FARMER DELIVERY ──────────────────────────────────────────
+            await deliveryModel.findByIdAndUpdate(deliveryId, { status: 'Delivered' }, { session })
 
-        await farmWalletModel.findOneAndUpdate(
-            {farmer: deliveries.farmerId},
-            {$inc: {escrowBalance: -deliveries.totalFare}},
-            {session}
-        )
+            await farmerWalletModel.findOneAndUpdate(
+                { farmer: delivery.farmerId },
+                { $inc: { escrowBalance: -delivery.totalFare } },
+                { session }
+            )
 
-        const driverWallet = await driverWalletModel.findOneAndUpdate(
-            {driver: deliveries.driverId},
-            {$inc: {availableBalance: +deliveries.totalFare}},
-            {new: true, session}
-        )
+            const driverWallet = await driverWalletModel.findOneAndUpdate(
+                { driver: driverId },
+                { $inc: { availableBalance: +delivery.totalFare } },
+                { new: true, session }
+            )
 
-        await driveTransModel.create([{
-            driver: driverId,
-            wallet: driverWallet._id,
-            delivery: deliveries._id,
-            amount: deliveries.totalFare,
-            type: 'Credit',
-            description: `Payment received for delivery ${deliveries.trackingId}`,
-            status: 'Successful'
-        }], {session})
+            await driveTransModel.create([{
+                driver: driverId,
+                wallet: driverWallet._id,
+                delivery: delivery._id,
+                amount: delivery.totalFare,
+                type: 'Credit',
+                description: `Payment received for delivery ${delivery.trackingId}`,
+                status: 'Successful'
+            }], { session })
 
-        await farmTransModel.findOneAndUpdate(
-            {delivery: deliveries._id},
-            {status: 'completed'},
-            {session}
-        )
+            await farmTransModel.findOneAndUpdate(
+                { delivery: delivery._id },
+                { status: 'completed' },
+                { session }
+            )
 
-        await driverModel.findByIdAndUpdate(driverId, { isAvailable: true }, { session })
+            await new notificationModel({
+                owner: delivery.farmerId,
+                ownerType: 'farmers',
+                title: 'Delivery Completed',
+                message: `Your ${delivery.productType} has been Delivered Successfully`,
+                type: 'delivery'
+            }).save({ session })
+
+        } else {
+            // ── AGENT DELIVERY ───────────────────────────────────────────
+            await agentDeliveryModel.findByIdAndUpdate(deliveryId, { status: 'Delivered' }, { session })
+
+            await agentWalletModel.findOneAndUpdate(
+                { agent: delivery.agentId },
+                { $inc: { escrowBalance: -delivery.totalFare } },
+                { session }
+            )
+
+            const driverWallet = await driverWalletModel.findOneAndUpdate(
+                { driver: driverId },
+                { $inc: { availableBalance: +delivery.totalFare } },
+                { new: true, session }
+            )
+
+            await driveTransModel.create([{
+                driver: driverId,
+                wallet: driverWallet._id,
+                delivery: delivery._id,
+                amount: delivery.totalFare,
+                type: 'Credit',
+                description: `Payment received for delivery ${delivery.trackingId}`,
+                status: 'Successful'
+            }], { session })
+
+            await agentTransModel.findOneAndUpdate(
+                { delivery: delivery._id },
+                { status: 'Completed' },
+                { session }
+            )
+
+            await new notificationModel({
+                owner: delivery.agentId,
+                ownerType: 'agents',
+                title: 'Delivery Completed',
+                message: `Your ${delivery.produceType} has been Delivered Successfully`,
+                type: 'delivery'
+            }).save({ session })
+        }
+
+        // Shared across both paths
+        const driverWalletForNotification = await driverWalletModel.findOne({ driver: driverId })
 
         await new notificationModel({
-            owner: deliveries.farmerId,
-            ownerType: 'farmers',
-            title: 'Delivery Completed',
-            message: `Your ${deliveries.productType} has been Delivered Successfully`,
-            type: 'delivery'
-        }).save({ session })
-
-        await new notificationModel({
-            owner: deliveries.driverId,
+            owner: driverId,
             ownerType: 'drivers',
             title: 'Delivery Completed',
-            message: `₦${deliveries.totalFare.toLocaleString()} has been added to your wallet`,
+            message: `₦${delivery.totalFare.toLocaleString()} has been added to your wallet`,
             type: 'delivery'
         }).save({ session })
 
+        await driverModel.findByIdAndUpdate(driverId, { isAvailable: true }, { session })
         await session.commitTransaction()
 
         res.status(200).json({
-            message: 'delivery has been completed',
+            message: 'Delivery completed successfully',
             data: {
-                trackingId: deliveries.trackingId,
-                amountEarned: `₦${deliveries.totalFare}`
+                trackingId: delivery.trackingId,
+                amountEarned: `₦${delivery.totalFare.toLocaleString()}`
             }
         })
-    }
-    catch(error){
+
+    } catch (error) {
         await session.abortTransaction()
         console.log(error.message)
-        return next({ 
-            message: error.message, 
-            statusCode: 500 
-        })
-    }
-    finally{
+        return next({ message: error.message, statusCode: 500 })
+    } finally {
         session.endSession()
     }
 }
 
 
-exports.rejectDelivery = async(req, res, next) =>{
-    try{
+exports.rejectDelivery = async(req, res, next) => {
+    try {
         const driverId = req.user.id
-        const {deliveryId} = req.params
+        const { deliveryId } = req.params
 
-        const delivery = await deliveryModel.findById(deliveryId)
-        if(!delivery){
-            return next({
-                message: 'delivery not found',
-                data: 404
-            })
+        const [farmerDelivery, agentDelivery] = await Promise.all([
+            deliveryModel.findById(deliveryId),
+            agentDeliveryModel.findById(deliveryId)
+        ])
+
+        const delivery = farmerDelivery || agentDelivery
+
+        if(!delivery) {
+            return next({ message: 'delivery not found', statusCode: 404 })
         }
 
-        await deliveryModel.findByIdAndUpdate(
-            deliveryId,
-            {$addToSet: {rejectedBy: driverId}}
-        )
+        if(farmerDelivery) {
+            await deliveryModel.findByIdAndUpdate(
+                deliveryId,
+                { $addToSet: { rejectedBy: driverId } }
+            )
+        } else {
+            await agentDeliveryModel.findByIdAndUpdate(
+                deliveryId,
+                { $addToSet: { rejectedBy: driverId } }
+            )
+        }
 
         res.status(200).json({
-            message: 'Delivery rejected '
+            message: 'Delivery rejected'
         })
 
-    }
-    catch(error){
-        return next({
-            message: error.message,
-            statusCode: 500
-        })
+    } catch(error) {
+        return next({ message: error.message, statusCode: 500 })
     }
 }

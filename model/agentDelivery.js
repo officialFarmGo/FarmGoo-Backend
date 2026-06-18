@@ -71,7 +71,11 @@ const agentDeliverySchema = new mongoose.Schema({
         type: String,
         enum: ['Pending', 'Accepted', 'In Transit', 'Delivered'],
         default: 'Pending'
-    }
+    },
+    rejectedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'drivers'
+    }]
 }, { timestamps: true })
 
 const agentDeliveryModel = mongoose.model('agentDelivery', agentDeliverySchema)
