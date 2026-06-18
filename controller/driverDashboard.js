@@ -102,30 +102,67 @@ exports.driverDashboard = async (req, res, next) => {
         }
 
         if (driver.isAvailable) {
-            const [farmerJobs, agentJobs] = await Promise.all([
-                deliveryModel.find({ status: 'Pending', driverId: { $exists: false } })
-                    .select('productType weight quantity totalFare AddressOrpickUpLocation Destination')
-                    .sort({ createdAt: -1 })
-                    .limit(5),
+    const driverKyc = await driverKycModel.findOne({ driver: driverId })
+    const driverVehicleTypeId = driverKyc?.vehicleType
 
-                agentDeliveryModel.find({ status: 'Pending', driverId: { $exists: false } })
-                    .select('produceType quantity totalFare pickupLocation Destination')
-                    .sort({ createdAt: -1 })
-                    .limit(5)
-            ])
+    const noDriverFilter = { $or: [{ driverId: { $exists: false } }, { driverId: null }] }
 
-            const normalizedAgentJobs = agentJobs.map(d => ({
-                ...d.toObject(),
-                productType: d.produceType,
-                AddressOrpickUpLocation: d.pickupLocation,
-                source: 'agent'
-            }))
+    const [farmerJobs, agentJobs] = await Promise.all([
+        deliveryModel.find({
+            status: 'Pending',
+            ...noDriverFilter,
+            vehhicleId: driverVehicleTypeId,        // ✅ filter by vehicle type
+            rejectedBy: { $nin: [driverId] }         // ✅ exclude rejected
+        })
+        .select('productType weight quantity totalFare AddressOrpickUpLocation Destination trackingId farmerId')
+        .populate('farmerId', 'firstName lastName phoneNumber townOrVillage')
+        .sort({ createdAt: -1 })
+        .limit(5),
 
-            const allJobs = [...farmerJobs, ...normalizedAgentJobs]
-            availableJobsCount = allJobs.length
-            availableJobsSection = { show: true, jobs: allJobs }
+        agentDeliveryModel.find({
+            status: 'Pending',
+            ...noDriverFilter,
+            vehicleType: driverVehicleTypeId,        // ✅ filter by vehicle type
+            rejectedBy: { $nin: [driverId] }         // ✅ exclude rejected
+        })
+        .select('produceType quantity totalFare pickupLocation Destination trackingId agentId')
+        .populate('agentId', 'firstName lastName phoneNumber')
+        .sort({ createdAt: -1 })
+        .limit(5)
+    ])
+
+    const normalizedFarmerJobs = farmerJobs.map(job => ({
+        ...job.toObject(),
+        productType: job.productType,
+        AddressOrpickUpLocation: job.AddressOrpickUpLocation,
+        source: 'farmer',
+        owner: {
+            name: `${job.farmerId?.firstName} ${job.farmerId?.lastName}`,
+            phone: job.farmerId?.phoneNumber,
+            location: job.farmerId?.townOrVillage || null,
+            type: 'farmer'
         }
+    }))
 
+    const normalizedAgentJobs = agentJobs.map(job => ({
+        ...job.toObject(),
+        productType: job.produceType,
+        AddressOrpickUpLocation: job.pickupLocation,
+        source: 'agent',
+        owner: {
+            name: `${job.agentId?.firstName} ${job.agentId?.lastName}`,
+            phone: job.agentId?.phoneNumber,
+            location: null,
+            type: 'agent'
+        }
+    }))
+
+    const allJobs = [...normalizedFarmerJobs, ...normalizedAgentJobs]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+    availableJobsCount = allJobs.length
+    availableJobsSection = { show: true, jobs: allJobs }
+}
         res.status(200).json({
             message: 'Driver dashboard fetched successfully',
             data: {
@@ -203,8 +240,12 @@ exports.getDriverDeliveries = async (req, res, next) => {
         const driverId = req.user.id
 
         const driver = await driverModel.findById(driverId)
+
         if (!driver) {
-            return next({ message: 'Driver not found', statusCode: 404 })
+            return next({
+                message: 'Driver not found',
+                statusCode: 404
+            })
         }
 
         const [
@@ -218,92 +259,188 @@ exports.getDriverDeliveries = async (req, res, next) => {
             agentCompletedDeliveries,
         ] = await Promise.all([
 
-            deliveryModel.countDocuments({ driverId, status: { $in: ['Accepted', 'In Transit'] } }),
-            agentDeliveryModel.countDocuments({ driverId, status: { $in: ['Accepted', 'In Transit'] } }),
-            deliveryModel.countDocuments({ driverId, status: 'Delivered' }),
-            agentDeliveryModel.countDocuments({ driverId, status: 'Delivered' }),
+            deliveryModel.countDocuments({
+                driverId,
+                status: { $in: ['Accepted', 'In Transit'] }
+            }),
 
-            deliveryModel.find({ driverId, status: { $in: ['Accepted', 'In Transit'] } })
+            agentDeliveryModel.countDocuments({
+                driverId,
+                status: { $in: ['Accepted', 'In Transit'] }
+            }),
+
+            deliveryModel.countDocuments({
+                driverId,
+                status: 'Delivered'
+            }),
+
+            agentDeliveryModel.countDocuments({
+                driverId,
+                status: 'Delivered'
+            }),
+
+            deliveryModel.find({
+                driverId,
+                status: { $in: ['Accepted', 'In Transit'] }
+            })
                 .select('trackingId productType quantity weight status AddressOrpickUpLocation Destination totalFare estimatedDuration pickupSchedule farmerId')
                 .populate('farmerId', 'firstName lastName phoneNumber')
-                .sort({ createdAt: -1 }).lean(),
+                .sort({ createdAt: -1 })
+                .lean(),
 
-            agentDeliveryModel.find({ driverId, status: { $in: ['Accepted', 'In Transit'] } })
+            agentDeliveryModel.find({
+                driverId,
+                status: { $in: ['Accepted', 'In Transit'] }
+            })
                 .select('trackingId produceType quantity status pickupLocation Destination totalFare estimatedDuration agentId')
                 .populate('agentId', 'firstName lastName phoneNumber')
-                .sort({ createdAt: -1 }).lean(),
+                .sort({ createdAt: -1 })
+                .lean(),
 
-            deliveryModel.find({ driverId, status: 'Delivered' })
-                .select('trackingId productType quantity weight status AddressOrpickUpLocation Destination totalFare estimatedDuration farmerId updatedAt')
-                .populate('farmerId', 'firstName lastName')
-                .sort({ updatedAt: -1 }).limit(3).lean(),
+            deliveryModel.find({
+                driverId,
+                status: 'Delivered'
+            })
+                .select('trackingId productType quantity weight status AddressOrpickUpLocation Destination totalFare estimatedDuration farmerId updatedAt estimatedDuration')
+                .populate('farmerId', 'firstName lastName phoneNumber')
+                .sort({ updatedAt: -1 })
+                .limit(3)
+                .lean(),
 
-            agentDeliveryModel.find({ driverId, status: 'Delivered' })
-                .select('trackingId produceType quantity status pickupLocation Destination totalFare updatedAt agentId')
-                .populate('agentId', 'firstName lastName')
-                .sort({ updatedAt: -1 }).limit(3).lean()
+            agentDeliveryModel.find({
+                driverId,
+                status: 'Delivered'
+            })
+                .select('trackingId produceType quantity status pickupLocation Destination totalFare updatedAt agentId estimatedDuration')
+                .populate('agentId', 'firstName lastName phoneNumber')
+                .sort({ updatedAt: -1 })
+                .limit(3)
+                .lean()
         ])
 
         const activeCount = farmerActiveCount + agentActiveCount
         const completedCount = farmerCompletedCount + agentCompletedCount
 
+        const normalizedFarmerActive = farmerActiveDeliveries.map(d => ({
+            ...d,
+            ownerName: d.farmerId
+                ? `${d.farmerId.firstName} ${d.farmerId.lastName}`
+                : 'Unknown Owner',
+            ownerPhone: d.farmerId?.phoneNumber || null,
+            source: 'farmer'
+        }))
+
         const normalizedAgentActive = agentActiveDeliveries.map(d => ({
             ...d,
             productType: d.produceType,
             AddressOrpickUpLocation: d.pickupLocation,
+            ownerName: d.agentId
+                ? `${d.agentId.firstName} ${d.agentId.lastName}`
+                : 'Unknown Owner',
+            ownerPhone: d.agentId?.phoneNumber || null,
             source: 'agent'
         }))
 
-        const allActiveDeliveries = [...farmerActiveDeliveries, ...normalizedAgentActive]
+        const allActiveDeliveries = [
+            ...normalizedFarmerActive,
+            ...normalizedAgentActive
+        ]
 
-        // avg ETA across all active
         const parseDurationToMinutes = (str = '') => {
             let minutes = 0
+
             const hourMatch = str.match(/(\d+)\s*hour/)
             const minMatch = str.match(/(\d+)\s*min/)
+
             if (hourMatch) minutes += parseInt(hourMatch[1]) * 60
             if (minMatch) minutes += parseInt(minMatch[1])
+
             return minutes
         }
+const completedForETA = [
+    ...farmerCompletedDeliveries,
+    ...agentCompletedDeliveries
+]
 
-        let avgETA = 'N/A'
-        if (allActiveDeliveries.length > 0) {
-            const totalMinutes = allActiveDeliveries.reduce(
-                (sum, d) => sum + parseDurationToMinutes(d.estimatedDuration), 0
-            )
-            const avgMinutes = totalMinutes / allActiveDeliveries.length
-            const avgHours = avgMinutes / 60
-            avgETA = `~${avgHours % 1 === 0 ? avgHours : avgHours.toFixed(1)}h`
-        }
+let avgETA = '~0m'
 
-        // merge completed, re-sort, take top 3
+if (completedForETA.length > 0) {
+
+    const totalMinutes = completedForETA.reduce((sum, delivery) => {
+        return sum + parseDurationToMinutes(delivery.estimatedDuration)
+    }, 0)
+
+    const avgMinutes = Math.round(
+        totalMinutes / completedForETA.length
+    )
+
+    const hours = Math.floor(avgMinutes / 60)
+    const minutes = avgMinutes % 60
+
+    avgETA =
+        hours > 0
+            ? `~${hours}h ${minutes}m`
+            : `~${minutes}m`
+}
+
+        const normalizedFarmerCompleted = farmerCompletedDeliveries.map(d => ({
+            ...d,
+            ownerName: d.farmerId
+                ? `${d.farmerId.firstName} ${d.farmerId.lastName}`
+                : 'Unknown Owner',
+            ownerPhone: d.farmerId?.phoneNumber || null,
+            source: 'farmer'
+        }))
+
         const normalizedAgentCompleted = agentCompletedDeliveries.map(d => ({
             ...d,
             productType: d.produceType,
             AddressOrpickUpLocation: d.pickupLocation,
+            ownerName: d.agentId
+                ? `${d.agentId.firstName} ${d.agentId.lastName}`
+                : 'Unknown Owner',
+            ownerPhone: d.agentId?.phoneNumber || null,
             source: 'agent'
         }))
 
-        const allCompleted = [...farmerCompletedDeliveries, ...normalizedAgentCompleted]
+        const allCompleted = [
+            ...normalizedFarmerCompleted,
+            ...normalizedAgentCompleted
+        ]
             .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
             .slice(0, 3)
 
         const formatCompletedAt = (date) => {
             const now = new Date()
             const d = new Date(date)
+
             const isToday = d.toDateString() === now.toDateString()
+
             const yesterday = new Date(now)
             yesterday.setDate(now.getDate() - 1)
+
             const isYesterday = d.toDateString() === yesterday.toDateString()
-            const time = d.toLocaleTimeString('en-NG', { hour: 'numeric', minute: '2-digit', hour12: true })
+
+            const time = d.toLocaleTimeString('en-NG', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            })
+
             if (isToday) return `Today, ${time}`
             if (isYesterday) return `Yesterday, ${time}`
-            return `${d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}, ${time}`
+
+            return `${d.toLocaleDateString('en-NG', {
+                day: 'numeric',
+                month: 'short'
+            })}, ${time}`
         }
 
         const shapedCompletedDeliveries = allCompleted.map(d => ({
             deliveryId: d._id,
             trackingId: d.trackingId,
+            ownerName: d.ownerName,
+            ownerPhone: d.ownerPhone,
             productType: d.productType,
             quantity: d.quantity,
             weight: d.weight,
@@ -314,7 +451,7 @@ exports.getDriverDeliveries = async (req, res, next) => {
             completedAt: formatCompletedAt(d.updatedAt),
             earned: `₦${d.totalFare?.toLocaleString()}`,
             earnedRaw: d.totalFare,
-            source: d.source || 'farmer'
+            source: d.source
         }))
 
         return res.status(200).json({
@@ -332,10 +469,13 @@ exports.getDriverDeliveries = async (req, res, next) => {
 
     } catch (error) {
         console.log(error)
-        return next({ message: 'Something went wrong', statusCode: 500 })
+
+        return next({
+            message: 'Something went wrong',
+            statusCode: 500
+        })
     }
 }
-
 
 
 
@@ -347,6 +487,15 @@ exports.getAvailableJobs = async (req, res, next) => {
         if (!driver) {
             return next({ message: 'Driver not found', statusCode: 404 })
         }
+        const driverKyc = await driverKycModel.findOne({ driver: driverId })
+        if (!driverKyc) {
+            return next({ message: 'Complete your KYC to view available jobs', statusCode: 403 })
+        }
+
+         const driverVehicleTypeId = driverKyc.vehicleType
+
+         const noDriverFilter = { $or: [{ driverId: { $exists: false } }, { driverId: null }] }
+
 
         const [farmerActiveCount, agentActiveCount] = await Promise.all([
             deliveryModel.countDocuments({ driverId, status: { $in: ['Accepted', 'In Transit'] } }),
@@ -368,7 +517,8 @@ exports.getAvailableJobs = async (req, res, next) => {
         const [farmerJobs, agentJobs] = await Promise.all([
             deliveryModel.find({
                 status: 'Pending',
-                driverId: { $exists: false },
+                ...noDriverFilter,
+                vehhicleId: driverVehicleTypeId,
                 rejectedBy: { $nin: [driverId] }
             })
             .select('trackingId productType quantity weight AddressOrpickUpLocation landMarkToAddressForPickup Destination totalFare estimatedDuration pickupSchedule farmerId vehhicleId createdAt')
@@ -378,7 +528,8 @@ exports.getAvailableJobs = async (req, res, next) => {
 
             agentDeliveryModel.find({
                 status: 'Pending',
-                driverId: { $exists: false },
+                ...noDriverFilter,
+                vehicleType: driverVehicleTypeId,
                 rejectedBy: { $nin: [driverId] }
             })
             .select('trackingId produceType quantity pickupLocation Destination totalFare estimatedDuration vehicleType agentId createdAt')
@@ -386,44 +537,55 @@ exports.getAvailableJobs = async (req, res, next) => {
             .populate('agentId', 'firstName lastName phoneNumber')
             .sort({ createdAt: -1 }).lean()
         ])
+const normalizedFarmerJobs = farmerJobs.map(job => ({
+    deliveryId: job._id,
+    trackingId: job.trackingId,
+    productType: job.productType,
+    quantity: job.quantity,
+    weight: job.weight,
+    pickup: {
+        address: job.AddressOrpickUpLocation,
+        landmark: job.landMarkToAddressForPickup
+    },
+    destination: job.Destination,
+    estimatedPayout: `₦${job.totalFare?.toLocaleString()}`,
+    estimatedDuration: job.estimatedDuration || 'N/A',
+    pickupSchedule: job.pickupSchedule,
+    vehicleRequired: job.vehhicleId?.vehicleType || 'N/A',
+    postedAt: job.createdAt,
+    source: 'farmer',
+    owner: {                                      // ← add this
+        name: `${job.farmerId?.firstName} ${job.farmerId?.lastName}`,
+        phone: job.farmerId?.phoneNumber,
+        location: job.farmerId?.townOrVillage || null,
+        type: 'farmer'
+    }
+}))
 
-        const normalizedFarmerJobs = farmerJobs.map(job => ({
-            deliveryId: job._id,
-            trackingId: job.trackingId,
-            productType: job.productType,
-            quantity: job.quantity,
-            weight: job.weight,
-            pickup: {
-                address: job.AddressOrpickUpLocation,
-                landmark: job.landMarkToAddressForPickup
-            },
-            destination: job.Destination,
-            estimatedPayout: `₦${job.totalFare?.toLocaleString()}`,
-            estimatedDuration: job.estimatedDuration || 'N/A',
-            pickupSchedule: job.pickupSchedule,
-            vehicleRequired: job.vehhicleId?.vehicleType || 'N/A',
-            postedAt: job.createdAt,
-            source: 'farmer'
-        }))
-
-        const normalizedAgentJobs = agentJobs.map(job => ({
-            deliveryId: job._id,
-            trackingId: job.trackingId,
-            productType: job.produceType,
-            quantity: job.quantity,
-            weight: null,
-            pickup: {
-                address: job.pickupLocation,
-                landmark: null
-            },
-            destination: job.Destination,
-            estimatedPayout: `₦${job.totalFare?.toLocaleString()}`,
-            estimatedDuration: job.estimatedDuration || 'N/A',
-            pickupSchedule: null,
-            vehicleRequired: job.vehicleType?.vehicleType || 'N/A',
-            postedAt: job.createdAt,
-            source: 'agent'
-        }))
+const normalizedAgentJobs = agentJobs.map(job => ({
+    deliveryId: job._id,
+    trackingId: job.trackingId,
+    productType: job.produceType,
+    quantity: job.quantity,
+    weight: null,
+    pickup: {
+        address: job.pickupLocation,
+        landmark: null
+    },
+    destination: job.Destination,
+    estimatedPayout: `₦${job.totalFare?.toLocaleString()}`,
+    estimatedDuration: job.estimatedDuration || 'N/A',
+    pickupSchedule: null,
+    vehicleRequired: job.vehicleType?.vehicleType || 'N/A',
+    postedAt: job.createdAt,
+    source: 'agent',
+    owner: {                                      // ← add this
+        name: `${job.agentId?.firstName} ${job.agentId?.lastName}`,
+        phone: job.agentId?.phoneNumber,
+        location: null,
+        type: 'agent'
+    }
+}))
 
         const allJobs = [...normalizedFarmerJobs, ...normalizedAgentJobs]
             .sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt))
