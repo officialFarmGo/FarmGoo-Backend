@@ -135,6 +135,20 @@ paths:
         "200":
           description: successfully gotten estimated price for delivery for the farmer
 
+  /api/v1/delivery/rejectDelivery/{deliveryId}:
+    post:
+      summary: This endpoint is to reject the delivery created by the farmer
+      parameters:
+        - in: path
+          name: deliveryId
+          required: true
+      tags: [Driver]
+      security: 
+        - bearerAuth: []           
+      responses:
+        "200":
+          description: delivery has been rejected and would no longer appear in your available jobs
+
     
 
   
