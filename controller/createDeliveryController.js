@@ -465,7 +465,7 @@ exports.rejectDelivery = async(req, res, next) =>{
         }
 
         await deliveryModel.findByIdAndUpdate(
-            driverId,
+            deliveryId,
             {$addToSet: {rejectedBy: driverId}}
         )
 
