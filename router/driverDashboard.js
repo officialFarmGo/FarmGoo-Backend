@@ -1,7 +1,7 @@
 const router = require('express').Router()
 
 
-const {driverDashboard, getDriverWallet, getDriverDeliveries, getAvailableJobs, getJobDetail, getOneDriver} = require('../controller/driverDashboard')
+const {driverDashboard, getDriverWallet, getDriverDeliveries, getAvailableJobs, getJobDetail, getOneDriver, getDriverEarnings} = require('../controller/driverDashboard')
 
 const {authenticate} = require('../middleWare/auth')
 
@@ -16,6 +16,8 @@ router.get('/getAvailableJobs', authenticate, getAvailableJobs)
 router.get('/getTheJobDetails/:deliveryId', authenticate, getJobDetail)
 
 router.get('/getOneDriver', authenticate,  getOneDriver)
+
+router.get('/getDriverEarnings', authenticate, getDriverEarnings)
 
 
 

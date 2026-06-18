@@ -237,3 +237,14 @@
       responses:
         "201":
           description: successfully created Kyc for agent
+
+/api/v1/driverDash/getDriverEarnings:
+   get:
+      summary: this endPoint is to get Drivers Earnings 
+      tags: [Driver]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten Drivers Earnings 
+

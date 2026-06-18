@@ -747,3 +747,217 @@ exports.getOneDriver = async (req, res, next) => {
         return next({ message: error.message, statusCode: 500 })
     }
 }
+
+
+
+
+
+
+
+
+
+
+exports.getDriverEarnings = async (req, res, next) => {
+    try {
+        const driverId = req.user.id
+
+        const driver = await driverModel.findById(driverId)
+        if (!driver) {
+            return next({ message: 'Driver not found', statusCode: 404 })
+        }
+
+        const now = new Date()
+
+        const startOfWeek = new Date(now)
+        startOfWeek.setDate(now.getDate() - now.getDay()) // Sunday
+        startOfWeek.setHours(0, 0, 0, 0)
+
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+        // ── Top stats (all run in parallel) ──────────────────────────────
+        const [
+            thisWeekResult,
+            totalClearedResult,
+            walletData,
+            allWeekTransactions,
+            recentFarmerDeliveries,
+            recentAgentDeliveries,
+            withdrawalHistory
+        ] = await Promise.all([
+
+
+            driveTransModel.aggregate([
+                {
+                    $match: {
+                        driver: new mongoose.Types.ObjectId(driverId),
+                        type: 'Credit',
+                        status: 'Successful',
+                        createdAt: { $gte: startOfWeek }
+                    }
+                },
+                { $group: { _id: null, total: { $sum: '$amount' } } }
+            ]),
+
+            // Total cleared = all time successful credits
+            driveTransModel.aggregate([
+                {
+                    $match: {
+                        driver: new mongoose.Types.ObjectId(driverId),
+                        type: 'Credit',
+                        status: 'Successful'
+                    }
+                },
+                { $group: { _id: null, total: { $sum: '$amount' } } }
+            ]),
+
+            // Wallet for available balance
+            driverWalletModel.findOne({ driver: driverId }),
+
+            // All this week's credit transactions for bar chart
+            driveTransModel.find({
+                driver: new mongoose.Types.ObjectId(driverId),
+                type: 'Credit',
+                status: 'Successful',
+                createdAt: { $gte: startOfWeek }
+            }).lean(),
+
+            // Recent completed farmer deliveries
+            deliveryModel.find({
+                driverId,
+                status: 'Delivered'
+            })
+            .select('productType quantity weight AddressOrpickUpLocation Destination totalFare updatedAt trackingId')
+            .sort({ updatedAt: -1 })
+            .limit(10)
+            .lean(),
+
+            // Recent completed agent deliveries
+            agentDeliveryModel.find({
+                driverId,
+                status: 'Delivered'
+            })
+            .select('produceType quantity pickupLocation Destination totalFare updatedAt trackingId')
+            .sort({ updatedAt: -1 })
+            .limit(10)
+            .lean(),
+
+            // Withdrawal history = Debit transactions
+            driveTransModel.find({
+                driver: new mongoose.Types.ObjectId(driverId),
+                type: 'Debit'
+            })
+            .select('amount status createdAt description')
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .lean()
+        ])
+
+        const thisWeekEarnings = thisWeekResult[0]?.total || 0
+        const totalCleared = totalClearedResult[0]?.total || 0
+        const walletBalance = walletData?.availableBalance || 0
+
+        // ── Bar chart — earnings per day of current week ─────────────────
+        // Days: 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+        const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        const dailyTotals = [0, 0, 0, 0, 0, 0, 0]
+
+        allWeekTransactions.forEach(tx => {
+            const dayIndex = new Date(tx.createdAt).getDay()
+            dailyTotals[dayIndex] += tx.amount
+        })
+
+        const barChartData = dayLabels.map((label, i) => ({
+            day: label,
+            amount: dailyTotals[i]
+        }))
+
+        const nonZeroDays = dailyTotals.filter(a => a > 0)
+        const avgPerDay = nonZeroDays.length > 0
+            ? Math.round(nonZeroDays.reduce((a, b) => a + b, 0) / nonZeroDays.length)
+            : 0
+        const bestDay = Math.max(...dailyTotals)
+        const bestDayLabel = dayLabels[dailyTotals.indexOf(bestDay)]
+
+        // ── Recent earnings — merge farmer + agent, sort by date ─────────
+        const formatDate = (date) => {
+            const d = new Date(date)
+            const now = new Date()
+            const isToday = d.toDateString() === now.toDateString()
+            const yesterday = new Date(now)
+            yesterday.setDate(now.getDate() - 1)
+            const isYesterday = d.toDateString() === yesterday.toDateString()
+            const time = d.toLocaleTimeString('en-NG', { hour: 'numeric', minute: '2-digit', hour12: true })
+            if (isToday) return `Today, ${time}`
+            if (isYesterday) return `Yesterday, ${time}`
+            return `${d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}`
+        }
+
+        const farmerEarnings = recentFarmerDeliveries.map(d => ({
+            trackingId: d.trackingId,
+            productType: d.productType,
+            quantity: `${d.quantity}${d.weight}`,
+            route: `${d.AddressOrpickUpLocation} → ${d.Destination}`,
+            date: formatDate(d.updatedAt),
+            rawDate: d.updatedAt,
+            amount: d.totalFare,
+            amountFormatted: `₦${d.totalFare?.toLocaleString()}`,
+            status: 'Delivered',
+            source: 'farmer'
+        }))
+
+        const agentEarnings = recentAgentDeliveries.map(d => ({
+            trackingId: d.trackingId,
+            productType: d.produceType,
+            quantity: `${d.quantity}`,
+            route: `${d.pickupLocation} → ${d.Destination}`,
+            date: formatDate(d.updatedAt),
+            rawDate: d.updatedAt,
+            amount: d.totalFare,
+            amountFormatted: `₦${d.totalFare?.toLocaleString()}`,
+            status: 'Delivered',
+            source: 'agent'
+        }))
+
+        const recentEarnings = [...farmerEarnings, ...agentEarnings]
+            .sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate))
+            .slice(0, 10)
+            .map(({ rawDate, ...rest }) => rest) // remove rawDate from response
+
+        const shapedWithdrawals = withdrawalHistory.map(tx => ({
+            amount: tx.amount,
+            amountFormatted: `-₦${tx.amount?.toLocaleString()}`,
+            description: tx.description || 'Withdrawal to bank',
+            date: formatDate(tx.createdAt),
+            status: tx.status
+        }))
+
+        return res.status(200).json({
+            message: 'Driver earnings fetched successfully',
+            data: {
+                stats: {
+                    thisWeek: thisWeekEarnings,
+                    thisWeekFormatted: `₦${thisWeekEarnings.toLocaleString()}`,
+                    clearedEarnings: totalCleared,
+                    clearedEarningsFormatted: `₦${totalCleared.toLocaleString()}`,
+                    walletBalance,
+                    walletBalanceFormatted: `₦${walletBalance.toLocaleString()}`
+                },
+                earningsOverview: {
+                    barChart: barChartData,
+                    summary: {
+                        totalThisWeek: `₦${thisWeekEarnings.toLocaleString()}`,
+                        averagePerDay: `₦${avgPerDay.toLocaleString()}`,
+                        bestDay: bestDay > 0 ? `₦${bestDay.toLocaleString()}` : '₦0',
+                        bestDayLabel
+                    }
+                },
+                recentEarnings,
+                withdrawalHistory: shapedWithdrawals
+            }
+        })
+
+    } catch (error) {
+        console.log(error)
+        return next({ message: 'Something went wrong', statusCode: 500 })
+    }
+}
