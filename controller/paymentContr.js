@@ -432,7 +432,7 @@ exports.withdrawFunds = async(req, res, next) => {
 
     } catch(error) {
         console.log(error.message)
-        return next({ message: error.message || 'something went wrong', statusCode: 500 })
+        return next({ message:error.response?.data?.message || error.message || 'something went wrong', statusCode: 500 })
     }
 }
 
