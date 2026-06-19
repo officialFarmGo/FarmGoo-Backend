@@ -283,3 +283,31 @@
     responses:
       "200":
         description: Profile updated successfully
+
+
+/api/v1/support/createReport:
+  post:
+    summary: Create a support report 
+    tags: [Support]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - issueType
+              - description
+            properties:
+              issueType:
+                type: string
+                enum: [Payment Issue, Delivery Issue, Account Issue, Technical Issue, Other]
+                example: Payment Issue
+              description:
+                type: string
+                example: I made a delivery payment but it's still showing as pending after 2 days.
+    responses:
+      "200":
+        description: Report submitted successfully

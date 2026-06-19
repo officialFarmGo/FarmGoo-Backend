@@ -40,6 +40,8 @@ const notificationsRouter = require('./router/notificationsRouter')
 
 const agentkycRouter = require('./router/agentKycRouter')
 
+const supportReportRouter = require('./router/supportReportrouter')
+
 
 
 
@@ -83,6 +85,7 @@ app.use('/api/v1/notifications', notificationsRouter)
 
 app.use('/api/v1/agentKyc', agentkycRouter)
 
+app.use('/api/v1/support', supportReportRouter)
 
 
 
