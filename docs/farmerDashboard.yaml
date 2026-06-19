@@ -248,3 +248,38 @@
         "200":
           description: successfully gotten Drivers Earnings 
 
+/api/v1/farmerDash/updateFarmer:
+  patch:
+    summary: Update agent profile
+    tags: [Agent]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              firstName:
+                type: string
+                example: John
+              lastName:
+                type: string
+                example: Philips
+              email:
+                type: string
+                example: stingify@gmail.com
+              townOrVillage:
+                type: string
+                example: Lagos
+              farmSize:
+                type: string
+                description: Small
+              profilePicture:
+                type: string
+                format: binary
+                description: Profile picture image (JPG, PNG, GIF)
+    responses:
+      "200":
+        description: Profile updated successfully

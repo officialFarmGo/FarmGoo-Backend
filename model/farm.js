@@ -51,7 +51,17 @@ const farmSchema = new mongoose.Schema({
     role: {
         type: String, 
         default: 'farmer'
-    }
+    },
+    profilePicture:{
+        securedUrl: {
+            type: String,
+            trim: true
+        },
+        publicId: {
+            type:String,
+            trim: true
+        }
+    },
 
 },  {timestamps: true})
 
