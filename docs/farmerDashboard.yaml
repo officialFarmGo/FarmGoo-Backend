@@ -250,8 +250,8 @@
 
 /api/v1/farmerDash/updateFarmer:
   patch:
-    summary: Update agent profile
-    tags: [Agent]
+    summary: Update farmer profile
+    tags: [Farmer]
     security:
       - bearerAuth: []
     requestBody:
