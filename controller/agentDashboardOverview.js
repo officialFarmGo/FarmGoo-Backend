@@ -474,3 +474,26 @@ exports.updateProfile = async(req, res, next) =>{
 
     }
 }
+
+
+exports.getOneAgent = async (req, res, next) => {
+    try {
+        const agentId = req.user.id
+
+        const agent = await agentModel.findById(agentId)
+        if (!agent) {
+            return next({ message: 'agent not found', statusCode: 404 })
+        }
+
+        res.status(200).json({
+            message: 'gotten one Agent',
+            data: agent
+        })
+
+    } catch (error) {
+        console.log(error)
+        return next({ message: error.message, statusCode: 500 })
+    }
+}
+
+
