@@ -141,7 +141,7 @@ exports.myFarmersOverview = async(req, res, next) => {
     try {
         const agentId = req.user.id
 
-        const [farmers, totalFarmersCount, totalDeliveriesCount, totalCommissions] = await Promise.all([
+        const [farmers, totalFarmersCount, totalDeliveriesCount, totalAmount] = await Promise.all([
 
             agentFarmerModel.find({ agent: agentId })
                 .sort({ createdAt: -1 }),
@@ -160,7 +160,7 @@ exports.myFarmersOverview = async(req, res, next) => {
                 {
                     $group: {
                         _id: null,
-                        total: { $sum: '$commission' }
+                        total: { $sum: '$amount' }
                     }
                 }
             ])
@@ -190,7 +190,7 @@ exports.myFarmersOverview = async(req, res, next) => {
                 stats: {
                     totalFarmers: totalFarmersCount,
                     totalDeliveries: totalDeliveriesCount,
-                    commissionsEarned: totalCommissions[0]?.total || 0
+                    totalAmountSpent: totalAmount[0]?.total || 0
                 },
                 farmers: farmersWithDeliveryCount
             }
