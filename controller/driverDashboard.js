@@ -962,3 +962,25 @@ exports.getDriverEarnings = async (req, res, next) => {
         return next({ message: 'Something went wrong', statusCode: 500 })
     }
 }
+
+
+
+// exports.profileSettings = async(req, res) =>{
+//   try{
+//     const driverId = req.user.id
+
+//     const {firstName, lastName, email, phoneNumber, } = req.body
+
+
+
+
+    
+//   }
+//   catch(error){
+//     return next({
+//       message: error.message,
+//       statusCode: 500
+//     })
+
+//   }
+// }
