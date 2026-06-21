@@ -311,3 +311,13 @@
     responses:
       "200":
         description: Report submitted successfully
+
+/api/v1/agentDashboard/getOneAgent:
+   get:
+      summary: this endPoint is to get one Agent
+      tags: [Agent]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten one Agent
