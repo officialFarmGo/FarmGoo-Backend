@@ -79,7 +79,7 @@ exports.initializePayment = async(req, res, next) =>{
             email: user.email,
             name:`${user.firstName} ${user.lastName}`
         },
-        redirect_url: 'https://google.com/'
+        redirect_url: 'https://farmgoo.vercel.app/login#login'
        }
 
        const response = await axios.post(process.env.kora_initialize, payload, {
