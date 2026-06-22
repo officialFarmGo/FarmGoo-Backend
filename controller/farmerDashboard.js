@@ -382,7 +382,7 @@ exports.getOneFarmer = async(req, res, next) => {
 exports.updateFarmerProfile = async(req, res, next) => {
     try {
         const farmerId = req.user.id
-        const { firstName, lastName, email, townOrVillage, farmSize } = req.body
+        const { firstName, lastName, email, townOrVillage, farmSize, phoneNumber} = req.body
 
         const farmer = await farmModel.findById(farmerId)
         if(!farmer) {
@@ -393,7 +393,8 @@ exports.updateFarmerProfile = async(req, res, next) => {
             firstName: firstName || farmer.firstName,
             lastName: lastName || farmer.lastName,
             email: email || farmer.email,
-            townOrVillage: townOrVillage || farmer.townOrVillage
+            townOrVillage: townOrVillage || farmer.townOrVillage,
+            phoneNumber: phoneNumber || farmer.phoneNumber,
         }
 
         // handle profile picture upload if provided

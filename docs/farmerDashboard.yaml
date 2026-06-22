@@ -321,3 +321,39 @@
       responses:
         "200":
           description: successfully gotten one Agent
+
+/api/v1/driverDash/updateProfile:
+  patch:
+    summary: Update Driver profile
+    tags: [Driver]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              firstName:
+                type: string
+                example: John
+              lastName:
+                type: string
+                example: Philips
+              email:
+                type: string
+                example: stingify@gmail.com
+              phoneNumber:
+                type: string
+                example: 07012904290
+              townOrVillage:
+                type: string
+                example: Lagos
+              profilePicture:
+                type: string
+                format: binary
+                description: Profile picture image (JPG, PNG, GIF)
+    responses:
+      "200":
+        description: Profile updated successfully

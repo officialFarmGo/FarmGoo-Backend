@@ -18,6 +18,8 @@ const mongoose = require('mongoose')
 const driverKycModel = require('../model/driverKyc')
 const bankModel = require('../model/bankModel')
 const agentDeliveryModel = require('../model/agentDelivery')
+const cloudinary = require('../utils/cloudinary')
+const fs = require('fs')
 
 
 
@@ -968,19 +970,20 @@ exports.getDriverEarnings = async (req, res, next) => {
 
 exports.updateDriverDashbard = async(req, res, next) => {
     try {
-        const farmerId = req.user.id
-        const { firstName, lastName, email, townOrVillage, farmSize } = req.body
+        const driverId = req.user.id
+        const { firstName, lastName, email, townOrVillage, phoneNumber} = req.body
 
-        const farmer = await farmModel.findById(farmerId)
-        if(!farmer) {
-            return next({ message: 'farmer not found', statusCode: 404 })
+        const driver = await driverModel.findById(driverId)
+        if(!driver) {
+            return next({ message: 'driver not found', statusCode: 404 })
         }
 
         const updateFields = {
-            firstName: firstName || farmer.firstName,
-            lastName: lastName || farmer.lastName,
-            email: email || farmer.email,
-            townOrVillage: townOrVillage || farmer.townOrVillage
+            firstName: firstName || driver.firstName,
+            lastName: lastName || driver.lastName,
+            email: email || driver.email,
+            townOrVillage: townOrVillage || driver.townOrVillage,
+             phoneNumber: phoneNumber || driver.phoneNumber,
         }
 
         // handle profile picture upload if provided
@@ -992,8 +995,8 @@ exports.updateDriverDashbard = async(req, res, next) => {
             const cloudinaryResponse = await Promise.all(uploadtocloudinary)
 
             // delete old picture from cloudinary if exists
-            if(farmer.profilePicture?.publicId) {
-                await cloudinary.uploader.destroy(farmer.profilePicture.publicId)
+            if(driver.profilePicture?.publicId) {
+                await cloudinary.uploader.destroy(driver.profilePicture.publicId)
             }
 
             updateFields.profilePicture = {
@@ -1012,27 +1015,22 @@ exports.updateDriverDashbard = async(req, res, next) => {
                    )
                }
            
-        const updatedFarmer = await farmModel.findByIdAndUpdate(
-            farmerId,
+        const updatedDriver = await driverModel.findByIdAndUpdate(
+            driverId,
             updateFields,
             { new: true }
         ).select('-password -otp -otpExpiresAt')
 
-        // update farmSize in KYC if provided
-        if(farmSize) {
-            await farmKycModel.findOneAndUpdate(
-                { farmer: farmerId },
-                { farmSize }
-            )
-        }
+       
+       
 
         res.status(200).json({
             message: 'Profile updated successfully',
-            data: updatedFarmer
+            data: updatedDriver
         })
 
     } catch(error) {
         console.log(error)
-        return next({ message: 'something went wrong', statusCode: 500 })
+        return next({ message: error.message, statusCode: 500 })
     }
 }
