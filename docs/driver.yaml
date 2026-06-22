@@ -154,6 +154,36 @@ paths:
       responses:
         "200":
           description: successfully reset the drivers otp
+
+  /api/v1/support/sendUsAMessage:
+    post:
+      summary: this endpoint is to allow the user send a message to us
+      tags: [Landing Page]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required: 
+                - name
+                - phoneNumber
+                - howCanWeHelp
+              properties:
+                name:
+                  type: string
+                  example: Daniel Crescent
+                phoneNumber:
+                  type: string
+                  example: 07014324321
+                howCanWeHelp:
+                  type: string
+                  example: I need assistance in....
+      responses:
+        "200":
+          description: successfully allowed the user on the landing page to send us a message
+
+  
   
 
   
