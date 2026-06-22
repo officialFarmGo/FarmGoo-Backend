@@ -12,7 +12,7 @@ const supportReportSchema = new mongoose.Schema({
     },
     issueType: {
         type: String,
-        enum: ['Payment Issue', 'Delivery Issue', 'Account Issue', 'Technical Issue', 'Other'],
+        enum: ['Payment Issue', 'Delivery Problem', 'Driver Complaint', 'Technical Issue', 'Other'],
         required: true
     },
     description: {

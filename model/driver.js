@@ -59,7 +59,17 @@ const driverSchema = new mongoose.Schema({
     isAvailable:{
         type: Boolean,
         default: true
-    }
+    },
+    profilePicture:{
+        securedUrl: {
+            type: String,
+            trim: true
+        },
+        publicId: {
+            type:String,
+            trim: true
+        }
+    },
 
 
 }, {timestamps: true})
