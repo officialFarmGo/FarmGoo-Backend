@@ -181,7 +181,7 @@ paths:
                   example: I need assistance in....
       responses:
         "200":
-          description: successfully allowed the user on the landing page to send us a message
+          description: successfully allowed the user on the landing page to send us a message on that said landing page
 
   
   
