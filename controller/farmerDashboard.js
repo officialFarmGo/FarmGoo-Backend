@@ -95,6 +95,8 @@ exports.dashBoardOverview = async(req, res, next) =>{
                 .limit(2)
              ])
 
+             const getFarmerWallet = await farmWalletModel.findOne({ farmer: farmerId })
+
          const weatherAlert = await getWeatherAlert(farmer.townOrVillage || 'Lagos')
          console.log('API KEY:', process.env.OPENWEATHER_API_KEY)
 
@@ -102,6 +104,7 @@ exports.dashBoardOverview = async(req, res, next) =>{
          res.status(200).json({
           message: 'Dashboard fetched successfully',
           data: {
+            walletBalance: getFarmerWallet?.availableBalance || 0,
             greeting: `${farmer.firstName} ${farmer.lastName}`,
             stats: {
              activeDeliveries: activeDeliveriesCount,
