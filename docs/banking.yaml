@@ -62,6 +62,6 @@ paths:
                   example: Access Bank          
       responses:
         "201":
-          description: user's has withdrawn successfully     
+          description: user's has withdrawn successfully from wallet    
 
   
