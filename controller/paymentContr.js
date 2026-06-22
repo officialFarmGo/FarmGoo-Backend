@@ -3,6 +3,8 @@ const driverModel = require('../model/driver')
 
 const paymentModel = require('../model/payment')
 
+const {nigerianBanks} = require('../utils/bankNamesAndCodes')
+
 const otpGenerator = require('otp-generator')
 const { response } = require('express')
 const { default: axios } = require('axios')
@@ -303,7 +305,21 @@ exports.withdrawFunds = async(req, res, next) => {
     try {
         const id  = req.user.id
         const userRole = req.user.role
-        const { amount, bankCode, accountNumber, bankName } = req.body
+        const { amount, accountNumber, bankName } = req.body
+
+       
+        const bank = nigerianBanks.find(
+            b => b.bankName.toLowerCase() === bankName.toLowerCase()
+        )
+
+        if (!bank) {
+            return next({
+                message: 'Invalid bank selected',
+                statusCode: 400
+            })
+        }
+
+        const bankCode = bank.bankCode
 
         // 1. find user
         let user
@@ -394,7 +410,7 @@ exports.withdrawFunds = async(req, res, next) => {
                 amount,
                 type: 'Debit',
                 description: `Withdrawal to ${bankName} - ****${accountNumber.slice(-4)}`,
-                status: 'Pending Release',
+                status: 'Pending',
                 reference
             })
         } else if(userRole === 'agent') {
@@ -431,8 +447,14 @@ exports.withdrawFunds = async(req, res, next) => {
         })
 
     } catch(error) {
-        console.log(error.message)
-        return next({ message:error.response?.data?.message || error.message || 'something went wrong', statusCode: 500 })
+    console.log('KORA ERROR:', error.response?.data)
+
+    return next({
+        message:
+            error.response?.data?.message ||
+            error.message ||
+            'something went wrong',
+        statusCode: 500
+    })
     }
 }
-

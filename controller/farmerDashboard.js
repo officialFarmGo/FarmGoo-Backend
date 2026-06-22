@@ -453,3 +453,17 @@ exports.updateFarmerProfile = async(req, res, next) => {
         return next({ message: 'something went wrong', statusCode: 500 })
     }
 }
+
+
+
+exports.logout = async(req, res, next) =>{
+    try{
+
+    }
+    catch(error){
+    return next({
+        message: error.message,
+        statusCode: 500
+    })
+    }
+}
