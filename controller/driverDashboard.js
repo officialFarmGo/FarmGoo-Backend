@@ -965,22 +965,74 @@ exports.getDriverEarnings = async (req, res, next) => {
 
 
 
-// exports.profileSettings = async(req, res) =>{
-//   try{
-//     const driverId = req.user.id
 
-//     const {firstName, lastName, email, phoneNumber, } = req.body
+exports.updateDriverDashbard = async(req, res, next) => {
+    try {
+        const farmerId = req.user.id
+        const { firstName, lastName, email, townOrVillage, farmSize } = req.body
 
+        const farmer = await farmModel.findById(farmerId)
+        if(!farmer) {
+            return next({ message: 'farmer not found', statusCode: 404 })
+        }
 
+        const updateFields = {
+            firstName: firstName || farmer.firstName,
+            lastName: lastName || farmer.lastName,
+            email: email || farmer.email,
+            townOrVillage: townOrVillage || farmer.townOrVillage
+        }
 
+        // handle profile picture upload if provided
+        if(req.files && req.files.profilePicture) {
+            const newfile = req.files.profilePicture
+            const newImage = newfile.map((e) => e.path)
 
-    
-//   }
-//   catch(error){
-//     return next({
-//       message: error.message,
-//       statusCode: 500
-//     })
+            const uploadtocloudinary = newImage.map((e) => cloudinary.uploader.upload(e))
+            const cloudinaryResponse = await Promise.all(uploadtocloudinary)
 
-//   }
-// }
+            // delete old picture from cloudinary if exists
+            if(farmer.profilePicture?.publicId) {
+                await cloudinary.uploader.destroy(farmer.profilePicture.publicId)
+            }
+
+            updateFields.profilePicture = {
+                securedUrl: cloudinaryResponse[0].secure_url,
+                publicId: cloudinaryResponse[0].public_id
+            }
+
+           await Promise.all(
+                   newfile.map((e) => {
+                       try {
+                           fs.unlinkSync(e.path)
+                       } catch(err) {
+                           console.log('file already deleted:', e.path)
+                       }
+                       })
+                   )
+               }
+           
+        const updatedFarmer = await farmModel.findByIdAndUpdate(
+            farmerId,
+            updateFields,
+            { new: true }
+        ).select('-password -otp -otpExpiresAt')
+
+        // update farmSize in KYC if provided
+        if(farmSize) {
+            await farmKycModel.findOneAndUpdate(
+                { farmer: farmerId },
+                { farmSize }
+            )
+        }
+
+        res.status(200).json({
+            message: 'Profile updated successfully',
+            data: updatedFarmer
+        })
+
+    } catch(error) {
+        console.log(error)
+        return next({ message: 'something went wrong', statusCode: 500 })
+    }
+}

@@ -303,7 +303,7 @@
             properties:
               issueType:
                 type: string
-                enum: [Payment Issue, Delivery Issue, Account Issue, Technical Issue, Other]
+                enum: [Payment Issue, Delivery Problem, Driver Complaint, Technical Issue, Other]
                 example: Payment Issue
               description:
                 type: string
