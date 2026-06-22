@@ -177,7 +177,7 @@ exports.createDelivery = async (req, res, next) => {
     );
 
    const totalFare = Math.round(vehicle.baseFare + vehicle.ratePerKm * distanceKm)
-    const commission = Math.round((10 / 100) * totalFare)
+    const commission = Math.round((5 / 100) * totalFare)
     const amount = Math.round(totalFare + commission)
 
 

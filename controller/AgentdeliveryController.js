@@ -143,7 +143,7 @@ exports.agentCreateDelivery = async (req, res, next) => {
         const { distanceKm, duration } = await getDistance(pickupLocation, Destination)
 
         const totalFare = Math.round(vehicle.baseFare + vehicle.ratePerKm * distanceKm)
-        const commission = Math.round((10 / 100) * totalFare)
+        const commission = Math.round((5 / 100) * totalFare)
         const amount = Math.round(totalFare + commission)
 
         // Wallet check — must have enough to cover total (fare + commission)
