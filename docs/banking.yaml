@@ -36,7 +36,7 @@ paths:
 
   /api/v1/payment/withdraw:
     post:
-      summary: this endpoint is to withdraw money from your wallet
+      summary: this endpoint is to withdraw money from your wallet, you can use a real account number
       tags: [withdraw]
       security: 
         - bearerAuth: []
@@ -48,16 +48,12 @@ paths:
               type: object
               required: 
                 - amount
-                - bankCode
                 - accountNumber
                 - bankName
               properties:
                 amount:
                   type: number
                   example: 1000
-                bankCode:
-                  type: string
-                  example: 044
                 accountNumber:
                   type: string
                   example: 0123456789         
