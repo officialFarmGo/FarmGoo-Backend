@@ -31,11 +31,9 @@ exports.createDeliveryValidator = (req, res, next) => {
             'string.empty': 'Customer phone number cannot be empty',
             'string.pattern.base': 'Customer phone number must be 11 digits'
         }),
-        CustomersOtherNumber: joi.string().pattern(/^\d{11}$/).required().messages({
-            'any.required': 'Customer other number is required',
-            'string.empty': 'Customer other number cannot be empty',
-            'string.pattern.base': 'Customer other number must be 11 digits'
-        }),
+        CustomersOtherNumber: joi.string().trim().pattern(/^\d{11}$/).allow('').optional().messages({
+             'string.pattern.base': 'Customer other number must be 11 digits'
+             }),
         customersName: joi.string().required().messages({
             'any.required': 'Customer Name is required',
             'string.empty': 'Customer Name cannot be empty'

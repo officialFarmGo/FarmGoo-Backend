@@ -59,8 +59,7 @@ const deliverySchema = new mongoose.Schema({
     },
     CustomersOtherNumber: {
          type: String,
-        trim: true,
-        required: true
+        trim: true
     },
     customersName: {
          type: String,
