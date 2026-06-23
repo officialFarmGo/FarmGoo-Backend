@@ -187,9 +187,9 @@ exports.createDelivery = async (req, res, next) => {
       return next({ message: "Wallet not found", statusCode: 404 });
     }
 
-    if (wallet.availableBalance < totalFare) {
+    if (wallet.availableBalance < amount) {
         return next({
-            message: `Insufficient wallet balance. Required: ₦${totalFare.toFixed(2)}, Available: ₦${wallet.availableBalance.toFixed(2)}`,
+            message: `Insufficient wallet balance. Required: ₦${amount.toFixed(2)}, Available: ₦${wallet.availableBalance.toFixed(2)}`,
             statusCode: 400
         })
     }

@@ -150,7 +150,7 @@ exports.driverLogin = async(req, res, next) =>{
         })
         if(!user){
             return next({
-                message: 'invalid email',
+                message: 'Driver not found',
                 statusCode: 404
             })
         

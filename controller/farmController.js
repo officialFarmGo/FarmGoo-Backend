@@ -154,7 +154,7 @@ exports.Farmlogin = async(req, res, next) =>{
         })
         if(!user){
             return next({
-                message: 'invalid email',
+                message: 'user not found',
                 statusCode: 404
             })
         
