@@ -29,7 +29,7 @@ exports.createAgent = async(req, res, next) =>{
 
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
 
-     const expiresAt = new Date(Date.now() + 1000 * 60 * 5)
+     const expiresAt = new Date(Date.now() + 1000 * 60 * 10)
      
 
      const salt = await bcrypt.genSalt(10);
@@ -214,7 +214,7 @@ exports.resendOtpforAgents = async(req, res, next) =>{
         }
 
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
-     const expiresAt = new Date(Date.now() + 1000 * 60 * 5)
+     const expiresAt = new Date(Date.now() + 1000 * 60 * 10)
 
      user.otpExpiresAt = expiresAt
 
@@ -261,7 +261,7 @@ exports.forgetPassword = async(req, res, next) => {
 
      const OTP = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
      user.otp = OTP
-     const expiresAt = new Date(Date.now() + 1000 * 60 * 5)
+     const expiresAt = new Date(Date.now() + 1000 * 60 * 10)
      user.otpExpiresAt = expiresAt
      await user.save()
     
