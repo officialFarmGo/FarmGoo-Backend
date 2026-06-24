@@ -18,7 +18,8 @@ exports.createAgentKyc = async(req, res, next) =>{
            kinsPhoneNumber,
            kinsEmail,
            kinsRelationship,
-           kinsLgaOrTown,    
+           kinsLgaOrTown, 
+           kinsResidentialAddress   
         } = req.body        
        
         const checkKyc = await agentKycModel.findOne({ agent: agentId})
@@ -59,7 +60,8 @@ exports.createAgentKyc = async(req, res, next) =>{
            kinsPhoneNumber,
            kinsEmail,
            kinsRelationship,
-           kinsLgaOrTown,    
+           kinsLgaOrTown,   
+           kinsResidentialAddress, 
            verificationDocument: {
         securedUrl: extractedUrl[0],
         publicId: cloudinaryResponse[0].public_id
