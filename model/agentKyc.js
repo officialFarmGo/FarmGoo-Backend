@@ -38,6 +38,10 @@ agentKycSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    kinsResidentialAddress: {
+        type: String,
+        required: true
+    },
     verificationDocument:{
         securedUrl: {
             type: String,
