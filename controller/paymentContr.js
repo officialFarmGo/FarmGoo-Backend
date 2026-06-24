@@ -46,6 +46,14 @@ exports.initializePayment = async(req, res, next) =>{
         
         const ownerType = userRole === 'farmer'? 'farmers': userRole === 'driver'? 'drivers': 'agents'
 
+        const redirectUrlMap = {
+            farmer: 'https://farmgoo.vercel.app/farmer/dashboard/withdrawalpage-success',
+            agent: 'https://farmgoo.vercel.app/agent/login#login',
+            driver: 'https://farmgoo.vercel.app/driver/login#login'
+        }
+
+         const redirectUrl = redirectUrlMap[userRole] || 'https://farmgoo.vercel.app/login#login'
+
         let receiver;
         let receiveOwnerType;
 
@@ -81,7 +89,7 @@ exports.initializePayment = async(req, res, next) =>{
             email: user.email,
             name:`${user.firstName} ${user.lastName}`
         },
-        redirect_url: 'https://farmgoo.vercel.app/login#login'
+        redirect_url: redirectUrl 
        }
 
        const response = await axios.post(process.env.kora_initialize, payload, {
@@ -113,7 +121,8 @@ exports.initializePayment = async(req, res, next) =>{
     }
        res.status(200).json({
         message: 'payment initiated successfully',
-        data: response.data?.data
+        data: response.data?.data,
+        userId: id
        })
 
 

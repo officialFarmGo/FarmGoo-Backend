@@ -2,7 +2,9 @@ const router = require("express").Router();
 
 const { agentCreateDelivery , agentCompleteDelivery, agentDeliveryAccept, estimateDeliveryPrice} = require("../controller/AgentdeliveryController");
 const { authenticate } = require("../middleWare/auth");
-router.post('/createDelivery/:vehhicleId', authenticate, agentCreateDelivery)
+
+const {createAgentDelivery} = require("../middleWare/AgentdeliveryValidation");
+router.post('/createDelivery/:vehhicleId', authenticate, createAgentDelivery, agentCreateDelivery)
 
 router.patch('/acceptDelivery/:deliveryId', authenticate, agentDeliveryAccept)
 
