@@ -74,7 +74,7 @@ exports.createAgentKyc = async(req, res, next) =>{
                )
         
 
-        const newUpdate = await agentKycModel.findByIdAndUpdate(
+        const newUpdate = await agentModel.findByIdAndUpdate(
             agentId,
             {
                 kycVerified: true
