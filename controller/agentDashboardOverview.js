@@ -293,7 +293,7 @@ exports.getSingleAgentDelivery = async (req, res, next) => {
                     // customersName: delivery.customersName ← add when ready
                     details: delivery.customersDetails
                 },
-                pin: showPin ? delivery.PIN : null,
+                pin: delivery.PIN ,
                 deliveryDetails: {
                     produce: delivery.produceType,
                     quantity: delivery.quantity,
