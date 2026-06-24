@@ -47,8 +47,8 @@ exports.initializePayment = async(req, res, next) =>{
         const ownerType = userRole === 'farmer'? 'farmers': userRole === 'driver'? 'drivers': 'agents'
 
         const redirectUrlMap = {
-            farmer: 'https://farmgoo.vercel.app/farmer/dashboard/withdrawalpage-success',
-            agent: 'https://farmgoo.vercel.app/agent/login#login',
+            farmer: 'https://farmgoo.vercel.app/farmer/dashboard/deposit-success',
+            agent: 'https://farmgoo.vercel.app/agent/dashboard/deposit-success',
             driver: 'https://farmgoo.vercel.app/driver/login#login'
         }
 
