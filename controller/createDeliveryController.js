@@ -472,6 +472,14 @@ exports.completeDelivery = async (req, res, next) => {
                 type: 'delivery'
             }).save({ session })
 
+            await new notificationModel({
+            owner: driverId,
+             ownerType: 'drivers',
+            title: 'Job Accepted',
+            message: `You have successfully accepted delivery ${delivery.trackingId}. Head to ${delivery.AddressOrpickUpLocation} for pickup.`,
+            type: 'delivery'
+            }).save({ session })
+
         } else {
             // ── AGENT DELIVERY ───────────────────────────────────────────
             await agentDeliveryModel.findByIdAndUpdate(deliveryId, { status: 'Delivered' }, { session })
@@ -510,6 +518,14 @@ exports.completeDelivery = async (req, res, next) => {
                 title: 'Delivery Completed',
                 message: `Your ${delivery.produceType} has been Delivered Successfully`,
                 type: 'delivery'
+            }).save({ session })
+
+            await new notificationModel({
+            owner: driverId,
+            ownerType: 'drivers',
+            title: 'Job Accepted',
+            message: `You have successfully accepted delivery ${delivery.trackingId}. Head to ${delivery.pickupLocation} for pickup.`,
+            type: 'delivery'
             }).save({ session })
         }
 
