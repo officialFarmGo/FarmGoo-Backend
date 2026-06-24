@@ -13,7 +13,7 @@ const { newDeliveryRequestTemplate } = require('../utils/bulkTemplate');
 const vehicleModel = require("../model/vehicleType");
 const driverWalletModel = require("../model/driverWallet");
 const notificationModel = require('../model/notification')
-const driverKycModel = require('../model/driverKyc')   // ← added
+const driverKycModel = require('../model/driverKyc')  
 
 
 const getDistance = async (origin, destination) => {
@@ -33,13 +33,13 @@ const getDistance = async (origin, destination) => {
   console.log('Google Maps response:', JSON.stringify(data))
 
   if (data.status !== "OK") {
-    throw new Error("Could not calculate distance");
+    throw new Error("Distance could not be calculated. Please provide full pickup and destination details.");
   }
 
   const element = data.rows[0].elements[0];
 
   if (element.status !== "OK") {
-    throw new Error("Could not find route between locations");
+    throw new Error("Route not found. Please enter complete pickup and destination addresses, including city or state");
   }
 
   const distanceKm = element.distance.value / 1000;

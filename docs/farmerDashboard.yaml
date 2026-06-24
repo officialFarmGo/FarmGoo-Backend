@@ -209,27 +209,25 @@
                   example: Lagos State
                 residentialAddress:
                   type: string
-                  format: binary
-                  description: vehicle photo image
+                  example: 23 Liverpool Road Apapa Lagos
                 kinsFirstName:
                   type: string
-                  format: binary
-                  description: vehicle papers image
+                  example: David
                 kinsLastName:
                   type: string
-                  description: ObjectId of the vehicle type
+                  example: Daniels
                 kinsPhoneNumber:
                   type: string
-                  description: ObjectId of the vehicle type
+                  example: 07012904290
                 kinsEmail:
                   type: string
-                  example: can include email
+                  example: formatgmail@gmail.com
                 kinsRelationship:
                   type: string
-                  description: ObjectId of the vehicle type
+                  example: Brother
                 kinsLgaOrTown:
                   type: string
-                  description: ObjectId of the vehicle type
+                  example: Lagos
                 verificationDocument:
                   type: string
                   format: binary

@@ -7,6 +7,8 @@ const {signUpValidator, verifyOtpValidator, resetPasswordValidator, resendOTPVal
 
 const {createAgentFarmer, getAllFarmersUnderAgent} = require('../controller/creatAgentFarmer')
 
+const {createFarmerforAgent} = require('../middleWare/AgentdeliveryValidation')
+
 const {authenticate} = require('../middleWare/auth')
 
 router.post('/signUp', signUpValidator, createAgent )
