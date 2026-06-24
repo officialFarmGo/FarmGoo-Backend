@@ -79,10 +79,7 @@ exports.createAgentKycValidation = (req, res, next) =>{
             'any.required': 'Agents kins last Name is required',
             'string.empty': 'Agents kins last Name cannot be empty'
         }),
-        kinsResidentialAddress:joi.string().trim().required().messages({
-            'any.required': 'Agents kins residential Address is required',
-            'string.empty': 'Agents kins residential Address cannot be empty'
-        }),
+        kinsResidentialAddress: joi.string().trim().optional(),
     })
 
     const { error } = schema.validate(req.body)
