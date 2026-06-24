@@ -4,7 +4,11 @@ const {upload} = require('../middleWare/multer')
 
 
 const {createAgentKyc} = require("../controller/agentKycCont");
-router.post('/createDelivery/:agentId', upload.fields([{name:'verificationDocument'}]),  createAgentKyc)
+
+
+const {createAgentKycValidation} = require('../middleWare/AgentdeliveryValidation')
+
+router.post('/createDelivery/:agentId', upload.fields([{name:'verificationDocument'}]),  createAgentKycValidation, createAgentKyc)
 
 
 module.exports = router;

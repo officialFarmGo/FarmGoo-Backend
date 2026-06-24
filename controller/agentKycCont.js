@@ -25,13 +25,14 @@ exports.createAgentKyc = async(req, res, next) =>{
         if(checkKyc){
             return next({
                 message: 'KYC already exists for this agent',
+                statusCode: 404
             })
         } 
 
         const agent = await agentModel.findById(agentId);
         if(!agent){
             return next({
-                message: 'farmer not found',
+                message: 'Agent not found',
                 statusCode: 404
             })
         }
