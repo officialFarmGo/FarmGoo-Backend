@@ -355,3 +355,13 @@
     responses:
       "200":
         description: Profile updated successfully
+
+/api/v1/notifications/getDriversNotification:
+   get:
+      summary: this endpoint is to get the drivers notification Overview
+      tags: [Driver]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: successfully gotten the drivers notification overview
