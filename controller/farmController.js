@@ -10,7 +10,7 @@ exports.createFarmer = async(req, res, next) =>{
     try{
         const {firstName, lastName, phoneNumber, email , townOrVillage, password} = req.body
 
-        const checkEmail = await farmModel.findOne({email})
+        const checkEmail = await farmModel.findOne({email: email.toLowerCase()})
           if(checkEmail){
                 return next({
                 message: "Email already exists",
@@ -40,7 +40,7 @@ exports.createFarmer = async(req, res, next) =>{
             firstName, 
             lastName,
             phoneNumber, 
-            email,
+            email: email.toLowerCase(),
             townOrVillage,
             password: hashPassword,
             otp: OTP,
@@ -83,7 +83,7 @@ exports.createFarmer = async(req, res, next) =>{
 exports.verifyOtp = async(req, res, next) =>{
     try{
         const {email, otp} = req.body
-        const checkEmail = await farmModel.findOne({email})
+        const checkEmail = await farmModel.findOne({email: email.toLowerCase()})
 
         if(!checkEmail){
             return next({
@@ -148,7 +148,7 @@ exports.Farmlogin = async(req, res, next) =>{
         const {emailOrPhone, password} = req.body
         const user = await farmModel.findOne({
             $or: [
-                {email: emailOrPhone},
+                {email: emailOrPhone.toLowerCase()},
                 {phoneNumber: emailOrPhone}
             ]
         })
@@ -245,7 +245,7 @@ exports.forgetPassword = async(req, res, next) => {
         const {emailOrPhone} = req.body
         const user = await farmModel.findOne({
             $or: [
-                {email: emailOrPhone},
+                {email: emailOrPhone.toLowerCase()},
                 {phoneNumber: emailOrPhone}
             ]
         })
