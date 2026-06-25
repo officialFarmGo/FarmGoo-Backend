@@ -10,7 +10,7 @@ exports.createDriver = async(req, res, next) =>{
     try{
         const {firstName, lastName, phoneNumber, email , townOrVillage, password} = req.body
 
-        const user = await driverModel.findOne({ email });
+        const user = await driverModel.findOne({ email: email.toLowerCase() });
         if(user){
                 return next({
                 message: "Email already exists",
@@ -40,7 +40,7 @@ exports.createDriver = async(req, res, next) =>{
             firstName, 
             lastName,
             phoneNumber, 
-            email,
+            email: email.toLowerCase(),
             townOrVillage,
             password: hashPassword,
             otp: OTP,
@@ -84,7 +84,7 @@ exports.createDriver = async(req, res, next) =>{
 exports.verifyOtpforDriver = async(req, res, next) =>{
     try{
         const {email, otp} = req.body
-        const checkEmail = await driverModel.findOne({email})
+        const checkEmail = await driverModel.findOne({email: email.toLowerCase()})
 
         if(!checkEmail){
             return next({
@@ -146,7 +146,7 @@ exports.driverLogin = async(req, res, next) =>{
         const {emailOrPhone, password} = req.body
         const user = await driverModel.findOne({
             $or: [
-                {email: emailOrPhone},
+                {email: emailOrPhone.toLowerCase()},
                 {phoneNumber: emailOrPhone}
             ]
         })
@@ -246,7 +246,7 @@ exports.forgetPasswordDriv = async(req, res, next) => {
         const {emailOrPhone} = req.body
         const user = await driverModel.findOne({
             $or: [
-                {email: emailOrPhone},
+                {email: emailOrPhone.toLowerCase()},
                 {phoneNumber: emailOrPhone}
             ]
         })
