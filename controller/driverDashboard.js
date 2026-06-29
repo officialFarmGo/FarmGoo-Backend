@@ -285,7 +285,7 @@ exports.getDriverDeliveries = async (req, res, next) => {
                 driverId,
                 status: { $in: ['Accepted', 'In Transit'] }
             })
-                .select('trackingId productType quantity weight status AddressOrpickUpLocation Destination totalFare estimatedDuration pickupSchedule farmerId')
+                .select('trackingId productType quantity weight status AddressOrpickUpLocation Destination totalFare estimatedDuration pickupSchedule farmerId customersName customersPhoneNumber CustomersOtherNumber')
                 .populate('farmerId', 'firstName lastName phoneNumber')
                 .sort({ createdAt: -1 })
                 .lean(),
@@ -294,7 +294,7 @@ exports.getDriverDeliveries = async (req, res, next) => {
                 driverId,
                 status: { $in: ['Accepted', 'In Transit'] }
             })
-                .select('trackingId produceType quantity status pickupLocation Destination totalFare estimatedDuration agentId')
+                .select('trackingId produceType quantity status pickupLocation Destination totalFare estimatedDuration agentId customersName customersDetails')
                 .populate('agentId', 'firstName lastName phoneNumber')
                 .sort({ createdAt: -1 })
                 .lean(),
@@ -323,15 +323,19 @@ exports.getDriverDeliveries = async (req, res, next) => {
         const activeCount = farmerActiveCount + agentActiveCount
         const completedCount = farmerCompletedCount + agentCompletedCount
 
-        const normalizedFarmerActive = farmerActiveDeliveries.map(d => ({
+      const normalizedFarmerActive = farmerActiveDeliveries.map(d => ({
             ...d,
             ownerName: d.farmerId
                 ? `${d.farmerId.firstName} ${d.farmerId.lastName}`
                 : 'Unknown Owner',
             ownerPhone: d.farmerId?.phoneNumber || null,
+            customerDetails: {
+                name: d.customersName || null,
+                phoneNumber: d.customersPhoneNumber || null,
+                otherNumber: d.CustomersOtherNumber || null
+            },
             source: 'farmer'
         }))
-
         const normalizedAgentActive = agentActiveDeliveries.map(d => ({
             ...d,
             productType: d.produceType,
@@ -340,9 +344,13 @@ exports.getDriverDeliveries = async (req, res, next) => {
                 ? `${d.agentId.firstName} ${d.agentId.lastName}`
                 : 'Unknown Owner',
             ownerPhone: d.agentId?.phoneNumber || null,
+            customerDetails: {
+                name: d.customersName || null,
+                phoneNumber: d.customersDetails || null,
+                otherNumber: null   // agent schema has no second customer number field
+            },
             source: 'agent'
         }))
-
         const allActiveDeliveries = [
             ...normalizedFarmerActive,
             ...normalizedAgentActive
