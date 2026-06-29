@@ -74,7 +74,7 @@ exports.createFarmer = async(req, res, next) =>{
     catch(error){
         console.log(error.message)
         next({
-            message: 'something went wrong',
+            message: error.message,
             statusCode: 500
         })
     }
@@ -120,13 +120,13 @@ exports.verifyOtp = async(req, res, next) =>{
            await farmWalletModel.create({ farmer: checkEmail._id })
        }    
 
-        const data = farmModel({
+        const data = {
             email,
             isVerified: checkEmail.isVerified
-        })
+        }
 
         res.status(200).json({
-            message: 'successfully verified Email',
+            message: 'successfully verified your Email, you can now log in',
             data
         })
 
@@ -135,7 +135,7 @@ exports.verifyOtp = async(req, res, next) =>{
     catch(error){
         console.log(error.message)
         next({
-            message: 'something went wrong',
+            message: error.message,
             statusCode: 500
         })
 
@@ -154,15 +154,15 @@ exports.Farmlogin = async(req, res, next) =>{
         })
         if(!user){
             return next({
-                message: 'user not found',
+                message: 'Farmer not found',
                 statusCode: 404
             })
         
         }
         if(user.isVerified == false){
             return next({
-                message: 'please verify your email',
-                statusCode: 404
+                message: 'please verify your email before logging in',
+                statusCode: 403
             })
         
         }
@@ -172,7 +172,7 @@ exports.Farmlogin = async(req, res, next) =>{
         if(!checkPassword){
             return next({
                 message: 'invalid Credentials',
-                statusCode: 404
+                statusCode: 401
             })
         
         }
@@ -193,8 +193,8 @@ exports.Farmlogin = async(req, res, next) =>{
     catch(error){
         console.log(error.message)
          return next({
-                message: 'invalid Credentials',
-                statusCode: 500
+                message: error.message,
+                statusCode: 401
             })
     }
 }
@@ -225,14 +225,14 @@ exports.resendOtpforFarmers = async(req, res, next) =>{
         await brevo(user.email, user.firstName, OTP, resendOtpTemplateForFarmers(user.firstName, OTP))
 
         res.status(200).json({
-            message: 'OTP Sent successfully'
+            message: 'A new OTP has been sent to your email address'
         })
 
 
     }
     catch(error){
          return next({
-                message: 'something went wrong',
+                message: error.message,
                 statusCode: 500
             })
         
@@ -265,14 +265,13 @@ exports.forgetPassword = async(req, res, next) => {
      await user.save()
     
      const data  = {
-        name: user.firstName,
-        otp: user.otp
+        name: user.firstName
      }
 
     await brevo(user.email, user.firstName, OTP, forgetPasswordTemplateforFarmer(user.firstName, OTP))
 
     res.status(200).json({
-        message: 'successfully forgotten password',
+        message: 'An OTP has been sent to your email address',
         data
     })
 
@@ -280,7 +279,7 @@ exports.forgetPassword = async(req, res, next) => {
     catch(error){
         console.log(error)
         return next({
-                message: 'something went wrong',
+                message: error.message,
                 statusCode: 500
             })
         
@@ -302,7 +301,7 @@ exports.resetPassword = async(req, res, next) =>{
         const checkPassword = await bcrypt.compare(password, user.password)
         if(checkPassword){
             return next({
-                message: 'please enter in a new password',
+                message: 'new password cannot be the same as your old password',
                 statusCode: 404
             })
         }
@@ -316,14 +315,14 @@ exports.resetPassword = async(req, res, next) =>{
         await brevo(user.email, user.firstName, null, resetPasswordSuccessfulTemplateforFarmer(user.firstName))
 
         res.status(200).json({
-            message: 'successfully reset password'
+            message: 'Password has been reset successfully. You can now log in with your new password.'
         })
 
     }
     catch(error){
         console.log(error)
          return next({
-                message: 'something went wrong',
+                message: error.message,
                 statusCode: 500
             })
         
