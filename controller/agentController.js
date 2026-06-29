@@ -121,13 +121,13 @@ exports.verifyOtp = async(req, res, next) =>{
            await agentWalletModel.create({ agent: checkEmail._id })
        }    
 
-        const data = agentModel({
+        const data = {
             email,
             isVerified: checkEmail.isVerified
-        })
+        }
 
         res.status(200).json({
-            message: 'successfully verified Email',
+            message: 'successfully verified your Email, you can now log in',
             data
         })
 
@@ -155,15 +155,15 @@ exports.agentLogin = async(req, res, next) =>{
         })
         if(!user){
             return next({
-                message: 'user not found',
+                message: 'Agent not found',
                 statusCode: 404
             })
         
         }
         if(user.isVerified == false){
             return next({
-                message: 'please verify your email',
-                statusCode: 404
+                message: 'please verify your email before logging in',
+                statusCode: 403
             })
         
         }
@@ -173,7 +173,7 @@ exports.agentLogin = async(req, res, next) =>{
         if(!checkPassword){
             return next({
                 message: 'invalid Credentials',
-                statusCode: 404
+                statusCode: 401
             })
         
         }
@@ -195,7 +195,7 @@ exports.agentLogin = async(req, res, next) =>{
         console.log(error.message)
          return next({
                 message: 'invalid Credentials',
-                statusCode: 500
+                statusCode: 401
             })
     }
 }
@@ -226,7 +226,7 @@ exports.resendOtpforAgents = async(req, res, next) =>{
         await brevo(user.email, user.firstName, OTP, resendOtpTemplateForAgents(user.firstName, OTP))
 
         res.status(200).json({
-            message: 'OTP Sent successfully'
+            message: 'A new OTP has been sent to your email address'
         })
 
 
@@ -266,14 +266,13 @@ exports.forgetPassword = async(req, res, next) => {
      await user.save()
     
      const data  = {
-        name: user.firstName,
-        otp: user.otp
+        name: user.firstName
      }
 
     await brevo(user.email, user.firstName, OTP, forgetPasswordTemplateForAgent(user.firstName, OTP))
 
     res.status(200).json({
-        message: 'successfully forgotten password',
+        message: 'An OTP has been sent to your email address',
         data
     })
 
@@ -303,8 +302,8 @@ exports.resetPassword = async(req, res, next) =>{
         const checkPassword = await bcrypt.compare(password, user.password)
         if(checkPassword){
             return next({
-                message: 'please enter in a new password',
-                statusCode: 404
+                message: 'new password cannot be the same as your old password',
+                statusCode: 400
             })
         }
 
@@ -317,7 +316,7 @@ exports.resetPassword = async(req, res, next) =>{
         await brevo(user.email, user.firstName, null, resetPasswordSuccessfulTemplateForAgent(user.firstName))
 
         res.status(200).json({
-            message: 'successfully reset password'
+            message: 'Password has been reset successfully. You can now log in with your new password.'
         })
 
     }

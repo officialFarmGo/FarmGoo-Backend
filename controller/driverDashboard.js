@@ -628,7 +628,7 @@ exports.getJobDetail = async (req, res, next) => {
             vehhicleId: driverKyc.vehicleType._id,
             rejectedBy: { $nin: [driverId] }
         })
-        .populate('farmerId', 'firstName lastName email phoneNumber createdAt kycVerified')
+        .populate('farmerId', 'firstName lastName email phoneNumber createdAt kycVerified ')
         .populate('vehhicleId', 'vehicleType')
         .lean()
 
@@ -715,6 +715,14 @@ exports.getJobDetail = async (req, res, next) => {
                     totalDeliveries: ownerTotalDeliveries,
                     memberSince,
                     type: isFarmerJob ? 'farmer' : 'agent'
+                },
+                customerDetails: isFarmerJob ? {
+                    name: job.customersName || null,
+                    phoneNumber: job.customersPhoneNumber || null,
+                    otherNumber: job.CustomersOtherNumber || null,
+                } : {
+                    name: job.customersName || null,
+                    phoneNumber: job.customersDetails || null,
                 },
 
                 postedAgo
